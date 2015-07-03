@@ -1,0 +1,400 @@
+{% extends "base2.html" %}
+{% block content %}
+
+<div class="row">
+	<div class="col-lg-6">
+		<h1 class="page-header">JIF</h1>
+	</div>
+	<!-- /.col-lg-12 -->
+</div>
+
+<dl class="dl-horizontal">
+  <dt>Product reference</dt>
+  <dd>{{product.reference}}</dd>
+  <dt>Product Order item</dt>
+  <dd>{{product.properties}}</dd>
+  <dt>SLA</dt>
+  <dd>{{sercSLA.reference}}</dd>
+  <dt>Workorder ID</dt>
+  <dd></dd>
+	<dt>Site</dt>
+  <dd>{{site}}</dd>
+</dl>
+
+<div class="row">
+	<div class="col-md-12">
+		<h2>Operation 1: Electrical {{sercElec.reference}}</h2>
+		<div class="panel panel-default">
+			<div class="panel-heading">Instructions</div>
+			<table class="table table-striped">
+				<tbody>
+					{% for properti in sercElec.properties %}
+					{% if properti.get().kind == 'Instruction'  and (properti.get().site == site or properti.get().site == "") %}
+					<tr>
+						<td>{{properti.get().value}}</td>
+					</tr>
+					{% endif %}
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+	</div>
+		<div class="col-md-12">
+			<div class="panel panel-default">
+				<div class="panel-heading">BOM</div>
+				<table class="table table-striped">
+					<tbody>
+						{% for properti in sercElec.properties %}
+						{% if properti.get().kind == 'Consumable'  and (properti.get().site == site or properti.get().site == "") %}
+						<tr>
+							<td>{{properti.get().name}}</td>
+							<td>{{properti.get().value}}</td>
+						</tr>
+						{% endif %}
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+	</div>
+	<div class="col-md-12">
+			<div class="panel panel-default">
+				<div class="panel-heading">Properties</div>
+				<table class="table table-striped">
+					<tbody>
+						{% for properti in sercElec.properties %}
+						{% if properti.get().kind == 'Property'  and (properti.get().site == site or properti.get().site == "") %}
+						<tr>
+							<td>{{properti.get().name}}</td>
+							<td>{{properti.get().value}}</td>
+						</tr>
+						{% endif %}
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+	</div>
+	<div class="col-md-12">
+		<h2>Operation 2: Graphical {{sercGraph.reference}}</h2>
+		<div class="panel panel-default">
+			<div class="panel-heading">Instructions</div>
+			<table class="table table-striped">
+				<tbody>
+					{% for properti in sercGraph.properties %}
+					{% if properti.get().kind == 'Instruction'  and (properti.get().site == site or properti.get().site == "") %}
+					<tr>
+						<td>{{properti.get().value}}</td>
+					</tr>
+					{% endif %}
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+	</div>
+	<div class="col-md-12">
+			<div class="panel panel-default">
+				<div class="panel-heading">BOM</div>
+				<table class="table table-striped">
+					<tbody>
+						{% for properti in sercGraph.properties %}
+						{% if properti.get().kind == 'Consumable'  and (properti.get().site == site or properti.get().site == "") %}
+						<tr>
+							<td>{{properti.get().name}}</td>
+							<td>{{properti.get().value}}</td>
+						</tr>
+						{% endif %}
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+	</div>
+	<div class="col-md-12">
+			<div class="panel panel-default">
+				<div class="panel-heading">Properties</div>
+				<table class="table table-striped">
+					<tbody>
+						{% for properti in sercGraph.properties %}
+						{% if properti.get().kind == 'Property'  and (properti.get().site == site or properti.get().site == "") %}
+						<tr>
+							<td>{{properti.get().name}}</td>
+							<td>{{properti.get().value}}</td>
+						</tr>
+						{% endif %}
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+	</div>
+	<div class="col-md-12">
+		<h2>Operation 3: Carrier {{sercCarr.reference}} </h2>
+		<div class="panel panel-default">
+			<div class="panel-heading">Instructions</div>
+			<table class="table table-striped">
+				<tbody>
+					{% for properti in sercCarr.properties %}
+					{% if properti.get().kind == 'Instruction' and (properti.get().site == site or properti.get().site == "") %}
+					<tr>
+						<td>{{properti.get().value}}</td>
+					</tr>
+					{% endif %}
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+	</div>
+	<div class="col-md-12">
+			<div class="panel panel-default">
+				<div class="panel-heading">BOM</div>
+				<table class="table table-striped">
+					<tbody>
+						{% for properti in sercCarr.properties %}
+						{% if properti.get().kind == 'Consumable'  and (properti.get().site == site or properti.get().site == "") %}
+						<tr>
+							<td>{{properti.get().name}}</td>
+							<td>{{properti.get().value}}</td>
+						</tr>
+						{% endif %}
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+	</div>
+	<div class="col-md-12">
+			<div class="panel panel-default">
+				<div class="panel-heading">Properties</div>
+				<table class="table table-striped">
+					<tbody>
+						{% for properti in sercCarr.properties %}
+						{% if properti.get().kind == 'Property' and (properti.get().site == site or properti.get().site == "")  %}
+						<tr>
+							<td>{{properti.get().name}}</td>
+							<td>{{properti.get().value}}</td>
+						</tr>
+						{% endif %}
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+	</div>
+	<div class="col-md-12">
+		<h2>Operation 4: Packaging {{sercPack.reference}}</h2>
+		<div class="panel panel-default">
+			<div class="panel-heading">Instructions</div>
+			<table class="table table-striped">
+				<tbody>
+					{% for properti in sercPack.properties %}
+					{% if properti.get().kind == 'Instruction' and (properti.get().site == site or properti.get().site == "")  %}
+					<tr>
+						<td>{{properti.get().value}}</td>
+					</tr>
+					{% endif %}
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+	</div>
+	<div class="col-md-12">
+			<div class="panel panel-default">
+				<div class="panel-heading">BOM</div>
+				<table class="table table-striped">
+					<tbody>
+						{% for properti in sercPack.properties %}
+						{% if properti.get().kind == 'Consumable' and (properti.get().site == site or properti.get().site == "")  %}
+						<tr>
+							<td>{{properti.get().name}}</td>
+							<td>{{properti.get().value}}</td>
+						</tr>
+						{% endif %}
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+	</div>
+	<div class="col-md-12">
+			<div class="panel panel-default">
+				<div class="panel-heading">Properties</div>
+				<table class="table table-striped">
+					<tbody>
+						{% for properti in sercPack.properties %}
+						{% if properti.get().kind == 'Property' and (properti.get().site == site or properti.get().site == "")  %}
+						<tr>
+							<td>{{properti.get().name}}</td>
+							<td>{{properti.get().value}}</td>
+						</tr>
+						{% endif %}
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+	</div>
+	<div class="col-md-12">
+		<h2>Operation 5: Dispatch {{sercDisp.reference}}</h2>
+		<div class="panel panel-default">
+			<div class="panel-heading">Instructions</div>
+			<table class="table table-striped">
+				<tbody>
+					{% for properti in sercDisp.properties %}
+					{% if properti.get().kind == 'Instruction' and (properti.get().site == site or properti.get().site == "")  %}
+					<tr>
+						<td>{{properti.get().value}}</td>
+					</tr>
+					{% endif %}
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+	</div>
+	<div class="col-md-12">
+			<div class="panel panel-default">
+				<div class="panel-heading">BOM</div>
+				<table class="table table-striped">
+					<tbody>
+						{% for properti in sercDisp.properties %}
+						{% if properti.get().kind == 'Consumable' and (properti.get().site == site or properti.get().site == "")  %}
+						<tr>
+							<td>{{properti.get().name}}</td>
+							<td>{{properti.get().value}}</td>
+						</tr>
+						{% endif %}
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+	</div>
+	<div class="col-md-12">
+			<div class="panel panel-default">
+				<div class="panel-heading">Properties</div>
+				<table class="table table-striped">
+					<tbody>
+						{% for properti in sercDisp.properties %}
+						{% if properti.get().kind == 'Property' and (properti.get().site == site or properti.get().site == "")  %}
+						<tr>
+							<td>{{properti.get().name}}</td>
+							<td>{{properti.get().value}}</td>
+						</tr>
+						{% endif %}
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+	</div>
+
+
+<div class="col-md-12">
+	<h2>Processes</h2>
+	{% for process in processes %}
+
+	<h2>Process: {{process.reference}}</h2>
+	<dl class="dl-horizontal">
+		<dt>Reference</dt><dd>{{process.reference}}</dd>
+		{% for service in process.sElec %}
+			{% if service.get() == sercElec %}
+				<dt>Electrical</dt><dd>{{service.get().reference}}</dd>
+			{% endif %}
+		{% endfor %}
+		{% for service in process.sGraph %}
+			{% if service.get() == sercGraph %}
+				<dt>Graphical</dt><dd>{{service.get().reference}}</dd>
+			{% endif %}
+		{% endfor %}
+		{% for service in process.sCarrier %}
+			{% if service.get() == sercCarr %}
+				<dt>Carrier</dt><dd>{{service.get().reference}}</dd>
+			{% endif %}
+		{% endfor %}
+		{% for service in process.sPack %}
+			{% if service.get() == sercPack %}
+				<dt>Packaging</dt><dd>{{service.get().reference}}</dd>
+			{% endif %}
+		{% endfor %}
+		{% for service in process.sDisp %}
+			{% if service.get() == sercDisp %}
+				<dt>Dispatch</dt><dd>{{service.get().reference}}</dd>
+			{% endif %}
+		{% endfor %}
+		{% for service in process.sSLA %}
+			{% if service.get() == sercSLA %}
+				<dt>SLA</dt><dd>{{service.get().reference}}</dd>
+			{% endif %}
+		{% endfor %}
+
+		<dt>Sites</dt><dd>	{% for site in process.sites %}{{site}}, {% endfor %}</dd>
+		<h4>Properties</h4>
+		{% for properti in process.properties %}
+	  <dt>{{properti.get().name}}</dt><dd>{{properti.get().value}}</dd>
+		{% endfor %}
+		<h4>Instrumentation</h4>
+		{% for properti in process.instrumentation %}
+	  <dt>{{properti.get().name}}</dt><dd>{{properti.get().value}}</dd>
+		{% endfor %}
+	</dl>
+	{% endfor %}
+</div>
+
+
+<div class="col-md-12">
+	<h2>Full BOM</h2>
+	<div class="panel panel-default">
+		<table class="table table-striped">
+			<tbody>
+				{% for properti in consumable %}
+				{% if (properti.site == site or properti.site == "")  %}
+				<tr>
+					<td>{{properti.name}}</td>
+					<td>{{properti.value}}</td>
+				</tr>
+				{% endif %}
+				{% endfor %}
+			</tbody>
+		</table>
+	</div>
+</div>
+
+<div class="col-md-12">
+	<h2>Instrumentation</h2>
+<div class="panel panel-default">
+	<div class="panel-heading">Instrumentation</div>
+	<table class="table table-striped">
+		<tbody>
+			{% for properti in instrumentation %}
+			{% if (properti.site == site or properti.site == "")  %}
+			<tr>
+				<td>{{properti.name}}</td>
+				<td>{{properti.value}}</td>
+			</tr>
+			{% endif %}
+			{% endfor %}
+		</tbody>
+	</table>
+</div>
+</div>
+
+<div class="col-md-12">
+	<h2>Properties</h2>
+	<div class="panel panel-default">
+		<table class="table table-striped">
+			<tbody>
+				{% for properti in properties %}
+				{% if (properti.site == site or properti.site == "")  %}
+				<tr>
+					<td>{{properti.name}}</td>
+					<td>{{properti.value}}</td>
+				</tr>
+				{% endif %}
+				{% endfor %}
+			</tbody>
+		</table>
+	</div>
+</div>
+
+
+
+
+
+
+</div>
+
+
+
+
+
+{% endblock content %}

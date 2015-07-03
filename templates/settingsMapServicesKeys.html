@@ -1,0 +1,53 @@
+{% extends "base2.html" %}
+{% import 'forms.html' as forms %}
+{% block content %}
+
+<div class="row">
+	<div class="col-lg-12">
+		<h1 class="page-header">Settings <span class="label label-default">NATIXIS - CNCE CARD</span> <span class="label label-default">Version 1</span></h1>
+	</div>
+	<!-- /.col-lg-12 -->
+</div>
+
+
+
+
+<h3>Map Services type to Keys</h3>
+<form role="form-inline" action="/{{account_id}}/{{dataflow_id}}/settingsMapServicesKeys" method="post">
+
+<table class="table table-striped">
+	<thead>
+		<tr>
+			<th>Name</th>
+			{% for inputKey in inputKeys %}
+			<th>{{inputKey}}</th>
+			{% endfor %}
+		</tr>
+	</thead>
+	<tbody>
+
+		{% for serviceType in serviceTypes %}
+		<tr>
+			<th scope="row">{{serviceType.get().name}}</a></th>
+			{% set i = 0 %}
+			{% for inputKey in inputKeys %}
+			<td>
+				<input type="checkbox" name='{{serviceType.get().name}}-{{inputKey}}' {% if serviceType.get().inputKeys[i] == 'on' %}checked='checked'{%endif%} >
+			</td>
+			{% set i = i + 1 %}
+			{% endfor %}
+		</tr>
+		{% endfor %}
+
+	</tbody>
+</table>
+{{ forms.submit_button('Save') }}
+</form>
+
+
+
+
+
+
+
+{% endblock content %}

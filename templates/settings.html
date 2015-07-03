@@ -1,0 +1,49 @@
+{% extends "base2.html" %}
+{% import 'forms.html' as forms %}
+{% block content %}
+
+<div class="row">
+	<div class="col-lg-12">
+		<h1 class="page-header">Settings <span class="label label-default">NATIXIS - CNCE CARD</span> <span class="label label-default">Version 1</span></h1>
+	</div>
+	<!-- /.col-lg-12 -->
+</div>
+
+
+
+
+<h3>Service type</h3>
+<table class="table table-striped">
+	<thead>
+		<tr>
+			<th>Type</th>
+		</tr>
+	</thead>
+	<tbody>
+		{% for serviceType in serviceTypes %}
+		<tr>
+			<th scope="row">{{serviceType}}</a></th>
+			<td>
+				<form role="form-inline" action="/{{account_id}}/{{dataflow_id}}/serviceTypes" method="post">
+					{{ forms.submit_button('Delete', 'btn-xs') }}
+					{{ forms.input('', 'serviceType', value=serviceType, type='hidden') }}
+				</form>
+			</td>
+		</tr>
+		{% endfor %}
+		<tr>
+			<form class="form-inline" role="form" action="/{{account_id}}/{{dataflow_id}}/serviceTypes" method="post">
+				<td>{{ forms.input('', 'reference', value='', type='text') }}</td>
+				<td>{{ forms.submit_button('Add') }}</td>
+			</form>
+		</tr>
+	</tbody>
+</table>
+
+
+
+
+
+
+
+{% endblock content %}
