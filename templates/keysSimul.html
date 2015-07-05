@@ -1,0 +1,107 @@
+{% extends "base2.html" %}
+{% import 'forms.html' as forms %}
+
+{% block content %}
+
+<h1>Keys Simulation</h1>
+
+<form class="form-inline" role="form" action="/{{account_id}}/{{dataflow_id}}/keysSimul" method="get">
+
+
+<table class="table table-striped">
+	<thead>
+		<tr>
+			{% for inputKey in inputKeys %}
+			<th>{{inputKey}}</th>
+			{% endfor %}
+		</tr>
+	</thead>
+	<tbody>
+
+		<tr>
+			{% for inputKey in inputKeys %}
+			<td>
+				{{ forms.input('', inputKey, value=keyDict[inputKey], type='text') }}
+			</td>
+			{% endfor %}
+		</tr>
+
+	</tbody>
+</table>
+
+{{ forms.submit_button('Exec') }}
+{{ forms.input('', 'action', value='exec', type='hidden') }}
+</form>
+<br>
+
+<p class="bg-{{messageType}}">{{message|safe}}</p>
+
+
+{% if fullProduct %}
+
+<table class="table table-striped">
+	<thead>
+		<tr>
+			<th>Name</th>
+			<th>Product</th>
+			{% for serviceType in serviceTypes %}
+			<th>{{serviceType.get().name}}</th>
+			{% endfor %}
+			<th>Action</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td><a href="/{{account_id}}/{{dataflow_id}}/matrix/{{fullProduct.key.id()}}">{{fullProduct.name}}</a></td>
+			<td><a href="/{{account_id}}/{{dataflow_id}}/products/{{fullProduct.product.get().key.id()}}">{{fullProduct.product.get().reference}}</a></td>
+			{% for service in fullProduct.services %}
+			<td><a href="/{{account_id}}/{{dataflow_id}}/services/{{service.get().key.id()}}">{{service.get().reference}}</a></td>
+			{% endfor %}
+			<td>
+				{% if fullProduct.key %}
+				<form role="form-inline" action="/{{account_id}}/{{dataflow_id}}/matrix" method="post">
+					{{ forms.submit_button('Delete', 'btn-xs') }}
+					{{ forms.input('', 'fullProduct_id', value=fullProduct.key.id(), type='hidden') }}
+					{{ forms.input('', 'action', value='delete', type='hidden') }}
+				</form>
+				{% endif %}
+			</td>
+		</tr>
+
+	</tbody>
+</table>
+{% endif %}
+
+{% if newfullProduct %}
+
+<table class="table table-striped">
+	<thead>
+		<tr>
+			<th>Name</th>
+			<th>Product</th>
+			{% for serviceType in serviceTypes %}
+			<th>{{serviceType.get().name}}</th>
+			{% endfor %}
+			<th>Action</th>
+		</tr>
+	</thead>
+	<tbody>
+		<form role="form-inline" action="/{{account_id}}/{{dataflow_id}}/matrix" method="post">
+		<tr>
+			<td>{{ forms.input('', 'name', value='', type='text') }}</td>
+			<td><a href="/{{account_id}}/{{dataflow_id}}/products/{{fullProduct.product.get().key.id()}}">{{fullProduct.product.get().reference}}</a></td>
+			{% for service in newfullProduct.services %}
+			<td><a href="/{{account_id}}/{{dataflow_id}}/services/{{service.get().key.id()}}">{{service.get().reference}}</a></td>
+			{% endfor %}
+			<td>
+					{{ forms.submit_button('Add', 'btn-xs') }}
+					{{ forms.input('', 'action', value='add', type='hidden') }}
+			</td>
+		</tr>
+	</form>
+
+	</tbody>
+</table>
+{% endif %}
+
+{% endblock content %}
