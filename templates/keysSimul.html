@@ -89,9 +89,20 @@
 		<form role="form-inline" action="/{{account_id}}/{{dataflow_id}}/matrix" method="post">
 		<tr>
 			<td>{{ forms.input('', 'name', value='', type='text') }}</td>
-			<td><a href="/{{account_id}}/{{dataflow_id}}/products/{{fullProduct.product.get().key.id()}}">{{fullProduct.product.get().reference}}</a></td>
+			<td>
+				<a href="/{{account_id}}/{{dataflow_id}}/products/{{newfullProduct.product.get().key.id()}}">
+					{{newfullProduct.product.get().reference}}
+				</a>
+				{{ forms.input('', 'product', value=newfullProduct.product.get().reference, type='hidden') }}
+			</td>
 			{% for service in newfullProduct.services %}
-			<td><a href="/{{account_id}}/{{dataflow_id}}/services/{{service.get().key.id()}}">{{service.get().reference}}</a></td>
+			<td>
+				<a href="/{{account_id}}/{{dataflow_id}}/services/{{service.get().key.id()}}">
+					{{service.get().reference}}
+				</a>
+				{{ forms.input('', serviceTypes[loop.index0].get().name, value=service.get().reference, type='hidden') }}
+			</td>
+
 			{% endfor %}
 			<td>
 					{{ forms.submit_button('Add', 'btn-xs') }}

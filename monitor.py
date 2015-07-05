@@ -771,6 +771,7 @@ class keysSimul(BaseHandler):
 			serviceList=[]
 			serviceNdbList=[]
 
+			allElementsAvailabe = 1
 			for serviceType in dataflow.serviceTypes:
 				list = []
 				i = 0
@@ -794,6 +795,7 @@ class keysSimul(BaseHandler):
 				else:
 					messageType = "danger"
 					message += "No service found for type " + serviceType.get().name +"<br> "
+					allElementsAvailabe = 0
 
 			list = []
 			i = 0
@@ -816,6 +818,7 @@ class keysSimul(BaseHandler):
 			else:
 				messageType = "danger"
 				message += "No product found <br> "
+				allElementsAvailabe = 0
 
 
 			logging.info(serviceList)
@@ -823,19 +826,22 @@ class keysSimul(BaseHandler):
 									   FullProduct.account == account_id,
 										FullProduct.servicesName_list==",".join(serviceList),
 										FullProduct.product == product.key).fetch()
-			if fullProducts:
-				fullProduct = fullProducts[0]
-				logging.info(fullProduct)
-				messageType = "success"
-				message = "This full product exists in the matrix"
-			else:
-				newfullProduct = dict()
-				newfullProduct['services'] = []
-				newfullProduct['services'].extend(serviceNdbList)
-				newfullProduct['product'] = product.key
-				logging.info(newfullProduct)
-				messageType = "warning"
-				message = "Key to service map OK, but full product not in matrix"
+
+			if allElementsAvailabe == 1:
+
+				if fullProducts:
+					fullProduct = fullProducts[0]
+					logging.info(fullProduct)
+					messageType = "success"
+					message = "This full product exists in the matrix"
+				else:
+					newfullProduct = dict()
+					newfullProduct['services'] = []
+					newfullProduct['services'].extend(serviceNdbList)
+					newfullProduct['product'] = product.key
+					logging.info(newfullProduct)
+					messageType = "warning"
+					message = "Key to service map OK, but full product not in matrix"
 
 
 		logging.info(message)
@@ -848,9 +854,38 @@ class keysSimul(BaseHandler):
 			'message': message,
 			'keyDict': keyDict,
 			'messageType': messageType,
+			'newfullProduct': newfullProduct,
 		}
 		return self.render_response('keysSimul.html', **template_values)
+	def post(self, account_id, dataflow_id):
 
+		if self.request.get("action") == 'add':
+			fullProduct = FullProduct(account = account_id,
+									dataflow = dataflow_id,
+									name = self.request.get("name"))
+
+			dataflow = Dataflow.query(Dataflow.reference == dataflow_id,
+										Dataflow.account == account_id).fetch()[0]
+
+			for serviceType in dataflow.serviceTypes:
+				service = Service.query(Service.account == account_id,
+										Service.dataflow == dataflow_id,
+										Service.reference == self.request.get(serviceType.get().name)).order(Service.stype).fetch()[0]
+				fullProduct.services.append(ndb.Key(Service, service.key.id()))
+				fullProduct.servicesName.append(service.reference)
+
+			product = Product.query(Product.account == account_id,
+									Product.dataflow == dataflow_id,
+									Product.reference == self.request.get('product')).fetch()[0]
+
+			fullProduct.product = product.key
+			fullProduct.put()
+
+		if self.request.get("action") == 'delete':
+			fullProduct = ndb.Key(FullProduct, int(self.request.get("fullProduct_id")))
+			fullProduct.delete()
+
+		self.redirect('/{0}/{1}/keysSimul'.format(account_id, dataflow_id))
 
 class fullproduct(BaseHandler):
 	def get(self, account_id, dataflow_id, fullproduct_id):
