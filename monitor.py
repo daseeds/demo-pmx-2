@@ -197,26 +197,67 @@ class Dashboard(BaseHandler):
 		return self.render_response('dashboard.html', **template_values)
 
 class ProcessesPage(BaseHandler):
-   	def get(self):
+   	def get(self, account_id, dataflow_id):
 
-		processes = Process.query().fetch()
+		services = Service.query(Service.account == account_id,
+								 Service.dataflow == dataflow_id).order(Service.stype).fetch()
+		dataflow = Dataflow.query(Dataflow.reference == dataflow_id,
+								  Dataflow.account == account_id).fetch()[0]
+
+		fullProducts = FullProduct.query(FullProduct.dataflow == dataflow_id,
+								   FullProduct.account == account_id).fetch()
+
+		products = Product.query(Product.account == account_id,
+								Product.dataflow == dataflow_id).fetch()
+
+		processes = Process.query(Process.account == account_id,
+								 Process.dataflow == dataflow_id).fetch()
+
+		productList = []
+		for product in products:
+			productList.append(product.reference)
+
+		serviceTypeList = []
+		for serviceType in dataflow.serviceTypes:
+			services = Service.query(Service.account == account_id,
+								 	 Service.dataflow == dataflow_id,
+									 Service.serviceType == serviceType).order(Service.stype).fetch()
+			serviceList = []
+			for service in services:
+				serviceList.append(service.reference)
+			serviceTypeList.append(serviceList)
+
    		template_values = {
+			'services': services,
+			'account_id': account_id,
+			'dataflow_id': dataflow_id,
+			'inputKeys': dataflow.inputKeys,
+			'serviceTypes': dataflow.serviceTypes,
+			'fullProducts': fullProducts,
+			'serviceTypeList': serviceTypeList,
+			'productList': productList,
 			'processes': processes,
-
 		}
+
+
+
 		return self.render_response('processes.html', **template_values)
-	def post(self):
+	def post(self, account_id, dataflow_id):
 
 		if self.request.get("reference"):
-			process = Process(reference=self.request.get("reference"))
+			process = Process(account = account_id,
+							  dataflow = dataflow_id,
+							  reference=self.request.get("reference"))
 			process.put()
+
+
 		else:
 			process = ndb.Key(Process, int(self.request.get("process_id")))
 			process.delete()
-		self.redirect('/processes')
+		self.redirect('/{0}/{1}/processes'.format(account_id, dataflow_id))
 
 class ProcessPage(BaseHandler):
-   	def get(self, process_id):
+   	def get(self, account_id, dataflow_id, process_id):
 
 		process = Process.get_by_id(int(process_id))
 
@@ -229,6 +270,8 @@ class ProcessPage(BaseHandler):
 
 
    		template_values = {
+			'account_id': account_id,
+			'dataflow_id': dataflow_id,
 			'process': process,
 			'site_list': site_list,
 			'propertyKind': propertyKind,
@@ -241,7 +284,7 @@ class ProcessPage(BaseHandler):
 		}
 		return self.render_response('process.html', **template_values)
 
-	def post(self, process_id):
+	def post(self, account_id, dataflow_id, process_id):
 
 		process = Process.get_by_id(int(process_id))
 
@@ -446,7 +489,7 @@ class ProductsPage(BaseHandler):
 		else:
 			product = ndb.Key(Product, int(self.request.get("process_id")))
 			product.delete()
-		self.redirect('/{{account_id}}/{{dataflow_id}}/products')
+		self.redirect('/{0}/{1}/products'.format(account_id, dataflow_id))
 
 class ProductPage(BaseHandler):
    	def get(self, account_id, dataflow_id, product_id):
@@ -683,6 +726,7 @@ class matrix(BaseHandler):
 									 	 Service.dataflow == dataflow_id,
 										 Service.reference == self.request.get(serviceType.get().name)).order(Service.stype).fetch()[0]
 				fullProduct.services.append(ndb.Key(Service, service.key.id()))
+				fullProduct.servicesName.append(service.reference)
 
 			product = Product.query(Product.account == account_id,
 									Product.dataflow == dataflow_id,
@@ -696,6 +740,117 @@ class matrix(BaseHandler):
 			fullProduct.delete()
 
 		self.redirect('/{0}/{1}/matrix'.format(account_id, dataflow_id))
+
+class keysSimul(BaseHandler):
+   	def get(self, account_id, dataflow_id):
+
+		dataflow = Dataflow.query(Dataflow.reference == dataflow_id,
+								  Dataflow.account == account_id).fetch()[0]
+
+		fullProduct = None
+		keyDict = None
+		newfullProduct = None
+		message=""
+		messageType=""
+		if self.request.get('action') == 'exec':
+
+			services = Service.query(Service.account == account_id,
+									 Service.dataflow == dataflow_id).order(Service.stype).fetch()
+
+
+			fullProducts = FullProduct.query(FullProduct.dataflow == dataflow_id,
+									   FullProduct.account == account_id).fetch()
+
+			products = Product.query(Product.account == account_id,
+									Product.dataflow == dataflow_id).fetch()
+
+			keyDict = dict()
+			for inputKey in dataflow.inputKeys:
+				keyDict[inputKey] = self.request.get(inputKey)
+
+			serviceList=[]
+			serviceNdbList=[]
+
+			for serviceType in dataflow.serviceTypes:
+				list = []
+				i = 0
+				logging.info(serviceType.get().name)
+				for inputKey in serviceType.get().inputKeys:
+					if inputKey == 'on':
+						logging.info(dataflow.inputKeys[i] + '=' +self.request.get(dataflow.inputKeys[i]))
+						list.append(self.request.get(dataflow.inputKeys[i]))
+					else:
+						list.append("")
+					i = i + 1
+				logging.info(list)
+				service = Service.query(Service.account == account_id,
+									    Service.dataflow == dataflow_id,
+										Service.inputKeys_list==",".join(list),
+										Service.stype == serviceType.get().name).fetch()
+				if service:
+					logging.info(service[0])
+					serviceList.append(service[0].reference)
+					serviceNdbList.append(service[0].key)
+				else:
+					messageType = "danger"
+					message += "No service found for type " + serviceType.get().name +"<br> "
+
+			list = []
+			i = 0
+			logging.info('product')
+			for inputKey in dataflow.productKeysMap:
+				if inputKey == 'on':
+					logging.info(dataflow.inputKeys[i] + '=' +self.request.get(dataflow.inputKeys[i]))
+					list.append(self.request.get(dataflow.inputKeys[i]))
+				else:
+					list.append("")
+				i = i + 1
+			logging.info(list)
+
+			products = Product.query(Product.account == account_id,
+								Product.dataflow == dataflow_id,
+								Product.inputKeys_list==",".join(list)).fetch()
+			if products:
+				product = products[0]
+				logging.info(product)
+			else:
+				messageType = "danger"
+				message += "No product found <br> "
+
+
+			logging.info(serviceList)
+			fullProducts = FullProduct.query(FullProduct.dataflow == dataflow_id,
+									   FullProduct.account == account_id,
+										FullProduct.servicesName_list==",".join(serviceList),
+										FullProduct.product == product.key).fetch()
+			if fullProducts:
+				fullProduct = fullProducts[0]
+				logging.info(fullProduct)
+				messageType = "success"
+				message = "This full product exists in the matrix"
+			else:
+				newfullProduct = dict()
+				newfullProduct['services'] = []
+				newfullProduct['services'].extend(serviceNdbList)
+				newfullProduct['product'] = product.key
+				logging.info(newfullProduct)
+				messageType = "warning"
+				message = "Key to service map OK, but full product not in matrix"
+
+
+		logging.info(message)
+   		template_values = {
+			'account_id': account_id,
+			'dataflow_id': dataflow_id,
+			'inputKeys': dataflow.inputKeys,
+			'fullProduct': fullProduct,
+			'serviceTypes': dataflow.serviceTypes,
+			'message': message,
+			'keyDict': keyDict,
+			'messageType': messageType,
+		}
+		return self.render_response('keysSimul.html', **template_values)
+
 
 class fullproduct(BaseHandler):
 	def get(self, account_id, dataflow_id, fullproduct_id):
@@ -884,8 +1039,9 @@ application = webapp2.WSGIApplication([
 	webapp2.Route(r'/<account_id:([^/]+)?>/<dataflow_id:([^/]+)?>/matrix', matrix),
 	webapp2.Route(r'/<account_id:([^/]+)?>/<dataflow_id:([^/]+)?>/matrix/<fullproduct_id:([^/]+)?>', fullproduct),
 	webapp2.Route(r'/<account_id:([^/]+)?>/<dataflow_id:([^/]+)?>/products/<product_id:([^/]+)?>', ProductPage),
-	webapp2.Route(r'/processes', ProcessesPage),
-	webapp2.Route(r'/processes/<process_id:([^/]+)?>', ProcessPage),
+	webapp2.Route(r'/<account_id:([^/]+)?>/<dataflow_id:([^/]+)?>/processes', ProcessesPage),
+	webapp2.Route(r'/<account_id:([^/]+)?>/<dataflow_id:([^/]+)?>/processes/<process_id:([^/]+)?>', ProcessPage),
+	webapp2.Route(r'/<account_id:([^/]+)?>/<dataflow_id:([^/]+)?>/keysSimul', keysSimul),
 
 	webapp2.Route(r'/<account_id:([^/]+)?>/<dataflow_id:([^/]+)?>/serviceTypes', SettingsServiceTypesPage),
 	webapp2.Route(r'/<account_id:([^/]+)?>/<dataflow_id:([^/]+)?>/settingsInputKeys', settingsInputKeysPage),

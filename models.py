@@ -35,13 +35,16 @@ class Service(ndb.Model):
 	inputKeys = ndb.StringProperty(repeated=True)
 	serviceType = ndb.KeyProperty(kind='ServiceType')
 	domain = ndb.StringProperty()
+	inputKeys_list = ndb.ComputedProperty(lambda self: ",".join(self.inputKeys))
 
 class FullProduct(ndb.Model):
 	name = ndb.StringProperty(default="")
 	services = ndb.KeyProperty(kind='Service', repeated=True)
+	servicesName = ndb.StringProperty(repeated=True)
 	product = ndb.KeyProperty(kind='Product')
 	dataflow = ndb.StringProperty(default="")
 	account = ndb.StringProperty(default="")
+	servicesName_list = ndb.ComputedProperty(lambda self: ",".join(self.servicesName))
 
 class Product(ndb.Model):
 	reference = ndb.StringProperty(default="")
@@ -50,6 +53,7 @@ class Product(ndb.Model):
 	orderItem = ndb.StringProperty(default="")
 	dataflow = ndb.StringProperty(default="")
 	account = ndb.StringProperty(default="")
+	inputKeys_list = ndb.ComputedProperty(lambda self: ",".join(self.inputKeys))
 
 class Property(ndb.Model):
 	name = ndb.StringProperty(default="")
@@ -63,17 +67,8 @@ class Property(ndb.Model):
 
 class Process(ndb.Model):
 	reference = ndb.StringProperty(default="")
-	sElec = ndb.KeyProperty(kind='Service', repeated=True)
-	sElecSentinel = ndb.ComputedProperty(lambda self: len(self.sElec) == 0)
-	sGraph = ndb.KeyProperty(kind='Service', repeated=True)
-	sGraphSentinel = ndb.ComputedProperty(lambda self: len(self.sGraph) == 0)
-	sCarrier = ndb.KeyProperty(kind='Service', repeated=True)
-	sCarrierSentinel = ndb.ComputedProperty(lambda self: len(self.sCarrier) == 0)
-	sPack = ndb.KeyProperty(kind='Service', repeated=True)
-	sPackSentinel = ndb.ComputedProperty(lambda self: len(self.sPack) == 0)
-	sDisp = ndb.KeyProperty(kind='Service', repeated=True)
-	sDispSentinel = ndb.ComputedProperty(lambda self: len(self.sDisp) == 0)
-	sSLA = ndb.KeyProperty(kind='Service', repeated=True)
-	sSLASentinel = ndb.ComputedProperty(lambda self: len(self.sSLA) == 0)
+	dataflow = ndb.StringProperty(default="")
+	account = ndb.StringProperty(default="")
 	sites = ndb.StringProperty(repeated=True)
 	properties = ndb.KeyProperty(kind='Property', repeated=True)
+	services = ndb.KeyProperty(kind='Service', repeated=True)
