@@ -1,0 +1,61 @@
+{% extends "base2.html" %}
+{% import 'forms.html' as forms %}
+
+{% block content %}
+
+<h1>Matrix</h1>
+
+
+
+<table class="table table-striped">
+	<thead>
+		<tr>
+			<th>Name</th>
+			<th>Product</th>
+			{% for serviceType in serviceTypes %}
+			<th>{{serviceType.get().name}}</th>
+			{% endfor %}
+			<th>Action</th>
+		</tr>
+	</thead>
+	<tbody>
+		{% for fullProduct in fullProducts %}
+		<tr>
+			<td><a href="/{{account_id}}/{{dataflow_id}}/matrix/{{fullProduct.key.id()}}">{{fullProduct.name}}</a></td>
+			<td><a href="/{{account_id}}/{{dataflow_id}}/products/{{fullProduct.product.get().key.id()}}">{{fullProduct.product.get().reference}}</a></td>
+			{% for service in fullProduct.services %}
+			<td><a href="/{{account_id}}/{{dataflow_id}}/services/{{service.get().key.id()}}">{{service.get().reference}}</a></td>
+			{% endfor %}
+			<td>
+				<form role="form-inline" action="/{{account_id}}/{{dataflow_id}}/matrix" method="post">
+					{{ forms.submit_button('Delete', 'btn-xs') }}
+					{{ forms.input('', 'fullProduct_id', value=fullProduct.key.id(), type='hidden') }}
+					{{ forms.input('', 'action', value='delete', type='hidden') }}
+				</form>
+			</td>
+		</tr>
+		{% endfor %}
+		<form class="form-inline" role="form" action="/{{account_id}}/{{dataflow_id}}/matrix" method="post">
+		<tr>
+			<td>{{ forms.input('', 'name', value='', type='text') }}</td>
+			<td>{{ forms.select('', 'product', productList, productList[0]) }}</td>
+			{% set i = 0 %}
+			{% for serviceType in serviceTypes %}
+			<td>{{ forms.select('', serviceType.get().name, serviceTypeList[i], serviceTypeList[i][0]) }}</td>
+			{% set i = i + 1 %}
+			{% endfor %}
+			<td>{{ forms.submit_button('Add') }}</td>
+		</tr>
+		{{ forms.input('', 'action', value='add', type='hidden') }}
+		</form>
+	</tbody>
+</table>
+
+
+
+
+
+
+
+
+{% endblock content %}

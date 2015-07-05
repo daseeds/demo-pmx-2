@@ -45,7 +45,7 @@
           <div id="navbar" class="navbar-collapse collapse">
             <ul class="nav navbar-nav navbar-right">
               <li><a href="/">Home</a></li>
-              <li><a href="#">Settings</a></li>
+              <li><a href="/settings">Settings</a></li>
               <li><a href="#">Help</a></li>
             </ul>
             <form class="navbar-form navbar-right">
@@ -61,20 +61,21 @@
           <div class="col-sm-3 col-md-2 navbar-default sidebar" role="navigation">
             <ul class="nav nav-sidebar ">
               <li ><a href="/{{account_id}}/{{dataflow_id}}">Dashboard <span class="sr-only">(current)</span></a></li>
-              <li><a href="/{{account_id}}/{{dataflow_id}}/dpservices">DP Services</a></li>
-              <li><a href="/{{account_id}}/{{dataflow_id}}/indusServices">Indus Services</a>
-                <ul class="nav-secondary nav-list" >
-                  <li><a href="/{{account_id}}/{{dataflow_id}}/indusServicesKeyMap">Key mapping</a></li>
-                </ul>
-              </li>
               <li><a href="/{{account_id}}/{{dataflow_id}}/products">Products</a></li>
+              <li><a href="/{{account_id}}/{{dataflow_id}}/services?domain=dp">DP Services</a>
+
+              </li>
+              <li><a href="/{{account_id}}/{{dataflow_id}}/services?domain=indus">Indus Services</a>
+
+              </li>
+              <li><a href="/{{account_id}}/{{dataflow_id}}/servicesKeyMap">Key values mapping</a></li>
               <li><a href="/{{account_id}}/{{dataflow_id}}/processes">Processes</a></li>
-              <li><a href="/{{account_id}}/{{dataflow_id}}/test">Simulations</a></li>
+              <li><a href="/{{account_id}}/{{dataflow_id}}/matrix">Matrix</a></li>
               <li ><a href="#"><span class="glyphicon glyphicon-wrench"></span> Settings</a>
               <ul class="nav-secondary nav-list" >
-                <li><a href="/{{account_id}}/{{dataflow_id}}/serviceTypes">Services Types</a></li>
-                <li><a href="/{{account_id}}/{{dataflow_id}}/settingsInputKeys">Input Keys</a></li>
-                <li><a href="/{{account_id}}/{{dataflow_id}}/settingsMapServicesKeys">Map services type to keys</a></li>
+                <li><a href="/{{account_id}}/{{dataflow_id}}/serviceTypes">Service Types</a></li>
+                <li><a href="/{{account_id}}/{{dataflow_id}}/settingsInputKeys">Input Keys Names</a></li>
+                <li><a href="/{{account_id}}/{{dataflow_id}}/settingsMapServicesKeys">Service Type to KeyNames Map</a></li>
 
               </ul>
             </li>
@@ -82,6 +83,14 @@
           </div>
           {% endblock leftnav %}
           <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+            {% block dataflowheader %}
+            <div class="row">
+            	<div class="col-lg-12">
+            		<h1 class="page-header"><span class="label label-default">{{account_id}} - {{dataflow_id}}</span> <span class="label label-default">Version 1</span></h1>
+            	</div>
+            	<!-- /.col-lg-12 -->
+            </div>
+            {% endblock dataflowheader %}
            {% block content %}
 
 

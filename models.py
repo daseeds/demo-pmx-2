@@ -16,6 +16,8 @@ class Dataflow(ndb.Model):
 	account = ndb.StringProperty(default="")
 	inputKeys = ndb.StringProperty(repeated=True)
 	serviceTypes = ndb.KeyProperty(kind='ServiceType', repeated=True)
+	fullProducts = ndb.KeyProperty(kind='FullProduct', repeated=True)
+	productKeysMap = ndb.StringProperty(repeated=True)
 
 class ServiceType(ndb.Model):
 	parent = ndb.KeyProperty(kind='Dataflow')
@@ -31,12 +33,23 @@ class Service(ndb.Model):
 	properties = ndb.KeyProperty(kind='Property', repeated=True)
 	stype = ndb.StringProperty()
 	inputKeys = ndb.StringProperty(repeated=True)
+	serviceType = ndb.KeyProperty(kind='ServiceType')
+	domain = ndb.StringProperty()
+
+class FullProduct(ndb.Model):
+	name = ndb.StringProperty(default="")
+	services = ndb.KeyProperty(kind='Service', repeated=True)
+	product = ndb.KeyProperty(kind='Product')
+	dataflow = ndb.StringProperty(default="")
+	account = ndb.StringProperty(default="")
 
 class Product(ndb.Model):
 	reference = ndb.StringProperty(default="")
 	properties = ndb.KeyProperty(kind='Property', repeated=True)
-	inputKeys = ndb.KeyProperty(kind='InputKey', repeated=True)
+	inputKeys = ndb.StringProperty(repeated=True)
 	orderItem = ndb.StringProperty(default="")
+	dataflow = ndb.StringProperty(default="")
+	account = ndb.StringProperty(default="")
 
 class Property(ndb.Model):
 	name = ndb.StringProperty(default="")
@@ -44,7 +57,8 @@ class Property(ndb.Model):
 	site = ndb.StringProperty(default="", choices=site_list)
 	kind = ndb.StringProperty(default=propertyKind[0], choices=propertyKind)
 	parent = ndb.KeyProperty()
-
+	dataflow = ndb.StringProperty(default="")
+	account = ndb.StringProperty(default="")
 
 
 class Process(ndb.Model):
@@ -63,15 +77,3 @@ class Process(ndb.Model):
 	sSLASentinel = ndb.ComputedProperty(lambda self: len(self.sSLA) == 0)
 	sites = ndb.StringProperty(repeated=True)
 	properties = ndb.KeyProperty(kind='Property', repeated=True)
-
-
-
-class FullProduct(ndb.Model):
-	reference = ndb.StringProperty(default="")
-	elec = ndb.KeyProperty(kind='Service')
-	graph = ndb.KeyProperty(kind='Service')
-	carrier = ndb.KeyProperty(kind='Service')
-	package = ndb.KeyProperty(kind='Service')
-	dispatch = ndb.KeyProperty(kind='Service')
-	SLA = ndb.KeyProperty(kind='Service')
-	product = ndb.KeyProperty(kind='Product')

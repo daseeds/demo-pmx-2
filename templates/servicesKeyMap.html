@@ -1,0 +1,80 @@
+{% extends "base2.html" %}
+{% import 'forms.html' as forms %}
+{% block content %}
+
+
+<h1>Map Services & products to Key values</h1>
+
+
+<form role="form-inline" action="/{{account_id}}/{{dataflow_id}}/servicesKeyMap" method="post">
+
+<table class="table table-striped">
+	<thead>
+		<tr>
+			<th>Name</th>
+			<th>Type</th>
+			{% for inputKey in inputKeys %}
+			<th>{{inputKey}}</th>
+			{% endfor %}
+		</tr>
+	</thead>
+	<tbody>
+
+		{% for service in services %}
+		<tr>
+			<th scope="row">{{service.reference}}</a></th>
+			<td>{{service.serviceType.get().name}}</td>
+			{% set i = 0 %}
+			{% for inputKey in inputKeys %}
+			<td>
+				{% if service.serviceType.get().inputKeys[i] %}
+				{% set ref = service.reference + '-' + inputKey%}
+				{{ forms.input('', ref, value=service.inputKeys[i], type='text') }}
+				{% endif %}
+			</td>
+			{% set i = i + 1 %}
+			{% endfor %}
+		</tr>
+		{% endfor %}
+
+	</tbody>
+</table>
+
+
+
+<table class="table table-striped">
+	<thead>
+		<tr>
+			<th>Name</th>
+			<th>OI</th>
+			{% for inputKey in inputKeys %}
+			<th>{{inputKey}}</th>
+			{% endfor %}
+		</tr>
+	</thead>
+	<tbody>
+
+		{% for product in products %}
+		<tr>
+			<th scope="row">{{product.reference}}</a></th>
+			<td>{{product.orderItem}}</td>
+			{% set i = 0 %}
+			{% for inputKey in inputKeys %}
+			<td>
+				{% if productKeysMap[i] %}
+				{% set ref = product.reference + '-' + inputKey%}
+				{{ forms.input('', ref, value=product.inputKeys[i], type='text') }}
+				{% endif %}
+			</td>
+			{% set i = i + 1 %}
+			{% endfor %}
+		</tr>
+		{% endfor %}
+
+	</tbody>
+</table>
+
+{{ forms.submit_button('Save') }}
+</form>
+
+{% endblock content %}

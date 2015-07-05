@@ -2,14 +2,9 @@
 {% import 'forms.html' as forms %}
 {% block content %}
 
-<div class="row">
-	<div class="col-lg-12">
-		<h1 class="page-header">Services <span class="label label-default">NATIXIS - CNCE CARD</span> <span class="label label-default">Version 1</span></h1>
-	</div>
-	<!-- /.col-lg-12 -->
-</div>
 
 
+<h1>Services</h1>
 
 
 <table class="table table-striped">
@@ -23,9 +18,9 @@
 		{% for service in services %}
 		<tr>
 			<th scope="row"><a href="/services/?filter=true&type={{service.stype}}">{{service.stype}}</a></th>
-			<td><a href="/services/{{service.key.id()}}">{{service.reference}}</a></td>
+			<td><a href="/{{account_id}}/{{dataflow_id}}/services/{{service.key.id()}}">{{service.reference}}</a></td>
 			<td>
-				<form role="form-inline" action="/{{account_id}}/{{dataflow_id}}/indusServices" method="post">
+				<form role="form-inline" action="/{{account_id}}/{{dataflow_id}}/services" method="post">
 					{{ forms.submit_button('Delete', 'btn-xs') }}
 					{{ forms.input('', 'process_id', value=service.key.id(), type='hidden') }}
 				</form>
@@ -36,9 +31,10 @@
 </table>
 
 
-<form class="form-inline" role="form" action="/{{account_id}}/{{dataflow_id}}/indusServices" method="post">
+<form class="form-inline" role="form" action="/{{account_id}}/{{dataflow_id}}/services" method="post">
 {{ forms.input('', 'reference', value='', type='text') }}
 {{ forms.select('Type', 'stype', typeList) }}
+{{ forms.input('', 'domain', value=domain, type='hidden') }}
 {{ forms.submit_button('Add') }}
 </form>
 

@@ -24,4 +24,25 @@ indexes:
   properties:
   - name: account
   - name: dataflow
+  - name: domain
+  - name: stype
+
+- kind: Service
+  properties:
+  - name: account
+  - name: dataflow
+  - name: reference
+  - name: stype
+
+- kind: Service
+  properties:
+  - name: account
+  - name: dataflow
+  - name: serviceType
+  - name: stype
+
+- kind: Service
+  properties:
+  - name: account
+  - name: dataflow
   - name: stype

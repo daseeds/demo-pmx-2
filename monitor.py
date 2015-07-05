@@ -67,6 +67,27 @@ class BaseHandler(webapp2.RequestHandler):
 				item['text'] = key + " " + service.reference
 				list.append(item)
 		return list
+
+	def getMatrixByFullProductId(self, account, dataflow, fullProduct_Id):
+		matrix = dict()
+
+		fullProduct = FullProduct.get_by_id(int(fullProduct_Id))
+
+		keys = []
+		keys.extend(fullProduct.services)
+		keys.append(fullProduct.product)
+
+		logging.info(keys)
+
+		matrix['consumables'] = Property.query(Property.kind=="Consumable",
+											Property.account==account,
+											Property.dataflow==dataflow,
+									 	     Property.parent.IN(keys)).fetch()
+
+		logging.info(matrix['consumables'])
+
+		return matrix
+
 	def getMatrix(self,
 				product_key,
 				electrical_key,
@@ -351,6 +372,7 @@ class settingsMapServicesKeys(BaseHandler):
 			'dataflow_id': dataflow_id,
 			'inputKeys': dataflow.inputKeys,
 			'serviceTypes': dataflow.serviceTypes,
+			'productKeysMap': dataflow.productKeysMap
 		}
 		return self.render_response('settingsMapServicesKeys.html', **template_values)
 	def post(self, account_id, dataflow_id):
@@ -363,41 +385,71 @@ class settingsMapServicesKeys(BaseHandler):
 				sType.inputKeys.append(self.request.get("{0}-{1}".format(serviceType.get().name, inputKey)))
 			sType.put()
 
+		dataflow.productKeysMap = []
+		for inputKey in dataflow.inputKeys:
+			dataflow.productKeysMap.append(self.request.get("product-{1}".format(serviceType.get().name, inputKey)))
+		dataflow.put()
+
+
 		self.redirect('/{0}/{1}/settingsMapServicesKeys'.format(account_id, dataflow_id))
 
 
 class SettingsPage(BaseHandler):
-   	def get(self, account_id, dataflow_id):
+   	def get(self):
+
+		dataflows = Dataflow.query().fetch()
+		accounts = Account.query().fetch()
+
+		accountList = []
+		for account in accounts:
+			accountList.append(account.reference)
 
    		template_values = {
-			'account_id': account_id,
-			'dataflow_id': dataflow_id,
+			'dataflows': dataflows,
+			'accounts': accounts,
+			'accountList': accountList,
 		}
 		return self.render_response('settings.html', **template_values)
 
+	def post(self):
+
+		if self.request.get("type") == 'account':
+			account = Account(reference = self.request.get("account"))
+			account.put()
+
+		if self.request.get("type") == 'dataflow':
+			dataflow = Dataflow(account = self.request.get("account"),
+								reference = self.request.get("dataflow"))
+			dataflow.put()
+
+		self.redirect('/settings')
 
 class ProductsPage(BaseHandler):
    	def get(self, account_id, dataflow_id):
 
-		products = Product.query().fetch()
+		products = Product.query(Product.account == account_id,
+						Product.dataflow == dataflow_id).fetch()
    		template_values = {
 			'products': products,
 			'account_id': account_id,
 			'dataflow_id': dataflow_id,
 		}
 		return self.render_response('products.html', **template_values)
-	def post(self):
+	def post(self, account_id, dataflow_id):
 
 		if self.request.get("reference"):
-			product = Product(reference=self.request.get("reference"))
+			product = Product(account = account_id,
+							  dataflow = dataflow_id,
+							  reference=self.request.get("reference"),
+							  orderItem = self.request.get("orderItem"))
 			product.put()
 		else:
 			product = ndb.Key(Product, int(self.request.get("process_id")))
 			product.delete()
-		self.redirect('/products')
+		self.redirect('/{{account_id}}/{{dataflow_id}}/products')
 
 class ProductPage(BaseHandler):
-   	def get(self, product_id):
+   	def get(self, account_id, dataflow_id, product_id):
 
 		product = Product.get_by_id(int(product_id))
 
@@ -406,10 +458,12 @@ class ProductPage(BaseHandler):
 			'product': product,
 			'site_list': site_list,
 			'propertyKind': propertyKind,
+			'account_id': account_id,
+			'dataflow_id': dataflow_id,
 		}
 		return self.render_response('product.html', **template_values)
 
-	def post(self, product_id):
+	def post(self, account_id, dataflow_id, product_id):
 
 		product = Product.get_by_id(int(product_id))
 
@@ -417,6 +471,8 @@ class ProductPage(BaseHandler):
 			prop = Property(site=self.request.get("site"),
 							name=self.request.get("name"),
 							value=self.request.get("value"),
+							account = account_id,
+							dataflow = dataflow_id,
 							kind=self.request.get("kind"))
 			prop.parent = product.key
 			prop.put()
@@ -440,23 +496,24 @@ class ProductPage(BaseHandler):
 		self.redirect('/products/{0}'.format(unicode(product_id)))
 
 
-class indusServices(BaseHandler):
+class services(BaseHandler):
    	def get(self, account_id, dataflow_id):
 
 		services = Service.query(Service.account == account_id,
-								 Service.dataflow == dataflow_id).order(Service.stype).fetch()
+								 Service.dataflow == dataflow_id,
+								 Service.domain == self.request.get("domain")).order(Service.stype).fetch()
 
 		typeList = []
 		dataflow = Dataflow.query(Dataflow.reference == dataflow_id).fetch()[0]
 		for serviceType in dataflow.serviceTypes:
 			typeList.append(serviceType.get().name)
 
-
    		template_values = {
 			'services': services,
 			'typeList': typeList,
 			'account_id': account_id,
 			'dataflow_id': dataflow_id,
+			'domain': self.request.get("domain"),
 		}
 		return self.render_response('services.html', **template_values)
 	def post(self, account_id, dataflow_id):
@@ -465,14 +522,19 @@ class indusServices(BaseHandler):
 			service = Service(reference=self.request.get("reference"),
 							  stype=self.request.get("stype"),
 							  account = account_id,
-							  dataflow = dataflow_id)
+							  dataflow = dataflow_id,
+							  domain = self.request.get("domain"))
+			serviceType = ServiceType.query(ServiceType.account == account_id,
+											ServiceType.dataflow == dataflow_id,
+											ServiceType.name == self.request.get("stype")).fetch()[0]
+			service.serviceType = serviceType.key
 			service.put()
 		else:
 			service = ndb.Key(Service, int(self.request.get("process_id")))
 			service.delete()
-		self.redirect('/{0}/{1}/indusServices'.format(account_id, dataflow_id))
+		self.redirect('/{0}/{1}/services?domain={2}'.format(account_id, dataflow_id, self.request.get("domain") ))
 
-class indusServicesKeyMap(BaseHandler):
+class servicesKeyMap(BaseHandler):
    	def get(self, account_id, dataflow_id):
 
 		services = Service.query(Service.account == account_id,
@@ -480,15 +542,20 @@ class indusServicesKeyMap(BaseHandler):
 		dataflow = Dataflow.query(Dataflow.reference == dataflow_id,
 								  Dataflow.account == account_id).fetch()[0]
 
+		products = Product.query(Product.account == account_id,
+								 Product.dataflow == dataflow_id).fetch()
+
 
    		template_values = {
 			'services': services,
 			'account_id': account_id,
 			'dataflow_id': dataflow_id,
 			'inputKeys': dataflow.inputKeys,
-
+			'serviceTypes': dataflow.serviceTypes,
+			'products': products,
+			'productKeysMap': dataflow.productKeysMap
 		}
-		return self.render_response('indusServicesKeyMap.html', **template_values)
+		return self.render_response('servicesKeyMap.html', **template_values)
 	def post(self, account_id, dataflow_id):
 
 		services = Service.query(Service.account == account_id,
@@ -496,18 +563,26 @@ class indusServicesKeyMap(BaseHandler):
 		dataflow = Dataflow.query(Dataflow.reference == dataflow_id,
 								  Dataflow.account == account_id).fetch()[0]
 
+		products = Product.query(Product.account == account_id,
+								 Product.dataflow == dataflow_id).fetch()
+
 		for service in services:
 			service.inputKeys = []
 			for inputKey in dataflow.inputKeys:
 				service.inputKeys.append(self.request.get("{0}-{1}".format(service.reference, inputKey)))
-
 			service.put()
 
-		self.redirect('/{0}/{1}/indusServicesKeyMap'.format(account_id, dataflow_id))
+		for product in products:
+			product.inputKeys = []
+			for inputKey in dataflow.inputKeys:
+				product.inputKeys.append(self.request.get("{0}-{1}".format(product.reference, inputKey)))
+			product.put()
+
+		self.redirect('/{0}/{1}/servicesKeyMap'.format(account_id, dataflow_id))
 
 
-class ServicePage(BaseHandler):
-   	def get(self, service_id):
+class service(BaseHandler):
+   	def get(self, account_id, dataflow_id,service_id):
 
 		service = Service.get_by_id(int(service_id))
 
@@ -515,12 +590,14 @@ class ServicePage(BaseHandler):
    		template_values = {
 			'service': service,
 			'site_list': site_list,
+			'account_id': account_id,
+			'dataflow_id': dataflow_id,
 			'propertyKind': propertyKind,
 
 		}
 		return self.render_response('service.html', **template_values)
 
-	def post(self, service_id):
+	def post(self, account_id, dataflow_id,service_id):
 
 		service = Service.get_by_id(int(service_id))
 
@@ -528,6 +605,8 @@ class ServicePage(BaseHandler):
 			prop = Property(site=self.request.get("site"),
 							name=self.request.get("name"),
 							value=self.request.get("value"),
+							account = account_id,
+							dataflow = dataflow_id,
 							kind=self.request.get("kind"))
 			prop.parent = service.key
 			prop.put()
@@ -548,9 +627,88 @@ class ServicePage(BaseHandler):
 			service.inputKeys.remove(self.request.get("id"))
 			service.put()
 
+		self.redirect('/{0}/{1}/services/{2}'.format(account_id, dataflow_id, unicode(service_id)))
+
+class matrix(BaseHandler):
+   	def get(self, account_id, dataflow_id):
+
+		services = Service.query(Service.account == account_id,
+								 Service.dataflow == dataflow_id).order(Service.stype).fetch()
+		dataflow = Dataflow.query(Dataflow.reference == dataflow_id,
+								  Dataflow.account == account_id).fetch()[0]
+
+		fullProducts = FullProduct.query(FullProduct.dataflow == dataflow_id,
+								   FullProduct.account == account_id).fetch()
+
+		products = Product.query(Product.account == account_id,
+								Product.dataflow == dataflow_id).fetch()
+
+		productList = []
+		for product in products:
+			productList.append(product.reference)
+
+		serviceTypeList = []
+		for serviceType in dataflow.serviceTypes:
+			services = Service.query(Service.account == account_id,
+								 	 Service.dataflow == dataflow_id,
+									 Service.serviceType == serviceType).order(Service.stype).fetch()
+			serviceList = []
+			for service in services:
+				serviceList.append(service.reference)
+			serviceTypeList.append(serviceList)
+
+   		template_values = {
+			'services': services,
+			'account_id': account_id,
+			'dataflow_id': dataflow_id,
+			'inputKeys': dataflow.inputKeys,
+			'serviceTypes': dataflow.serviceTypes,
+			'fullProducts': fullProducts,
+			'serviceTypeList': serviceTypeList,
+			'productList': productList,
+		}
+		return self.render_response('matrix.html', **template_values)
+	def post(self, account_id, dataflow_id):
+
+		if self.request.get("action") == 'add':
+			fullProduct = FullProduct(account = account_id,
+									  dataflow = dataflow_id,
+									  name = self.request.get("name"))
+
+			dataflow = Dataflow.query(Dataflow.reference == dataflow_id,
+										  Dataflow.account == account_id).fetch()[0]
+
+			for serviceType in dataflow.serviceTypes:
+				service = Service.query(Service.account == account_id,
+									 	 Service.dataflow == dataflow_id,
+										 Service.reference == self.request.get(serviceType.get().name)).order(Service.stype).fetch()[0]
+				fullProduct.services.append(ndb.Key(Service, service.key.id()))
+
+			product = Product.query(Product.account == account_id,
+									Product.dataflow == dataflow_id,
+									Product.reference == self.request.get('product')).fetch()[0]
+
+			fullProduct.product = product.key
+			fullProduct.put()
+
+		if self.request.get("action") == 'delete':
+			fullProduct = ndb.Key(FullProduct, int(self.request.get("fullProduct_id")))
+			fullProduct.delete()
+
+		self.redirect('/{0}/{1}/matrix'.format(account_id, dataflow_id))
+
+class fullproduct(BaseHandler):
+	def get(self, account_id, dataflow_id, fullproduct_id):
+		matrix = self.getMatrixByFullProductId(account_id, dataflow_id, fullproduct_id)
 
 
-		self.redirect('/services/{0}'.format(unicode(service_id)))
+   		template_values = {
+			'consumables': matrix['consumables'],
+			'account_id': account_id,
+			'dataflow_id': dataflow_id,
+		}
+
+		return self.render_response('fullproduct.html', **template_values)
 
 
 class TestPage(BaseHandler):
@@ -699,7 +857,7 @@ class deleteDB(BaseHandler):
 
 		logging.info("delete DB")
    		ndb.delete_multi(ndb.Query(default_options=ndb.QueryOptions(keys_only=True)))
-		self.redirect('/dashboard')
+		self.redirect('/')
 
 class fillDB(BaseHandler):
    	def get(self):
@@ -710,21 +868,25 @@ class fillDB(BaseHandler):
 		Dataflow(reference='CNCE CARD', account='NATIXIS').put()
 
 
-		self.redirect('/dashboard')
+		self.redirect('/')
 
 
 
 
 application = webapp2.WSGIApplication([
     webapp2.Route(r'/', MainPage),
+	webapp2.Route(r'/settings', SettingsPage),
 	webapp2.Route(r'/<account_id:([^/]+)?>/<dataflow_id:([^/]+)?>', Dashboard),
-	webapp2.Route(r'/<account_id:([^/]+)?>/<dataflow_id:([^/]+)?>/indusServices', indusServices),
-	webapp2.Route(r'/<account_id:([^/]+)?>/<dataflow_id:([^/]+)?>/indusServicesKeyMap', indusServicesKeyMap),
+	webapp2.Route(r'/<account_id:([^/]+)?>/<dataflow_id:([^/]+)?>/services', services),
+	webapp2.Route(r'/<account_id:([^/]+)?>/<dataflow_id:([^/]+)?>/services/<service_id:([^/]+)?>', service),
+	webapp2.Route(r'/<account_id:([^/]+)?>/<dataflow_id:([^/]+)?>/servicesKeyMap', servicesKeyMap),
 	webapp2.Route(r'/<account_id:([^/]+)?>/<dataflow_id:([^/]+)?>/products', ProductsPage),
-	webapp2.Route(r'/products/<product_id:([^/]+)?>', ProductPage),
+	webapp2.Route(r'/<account_id:([^/]+)?>/<dataflow_id:([^/]+)?>/matrix', matrix),
+	webapp2.Route(r'/<account_id:([^/]+)?>/<dataflow_id:([^/]+)?>/matrix/<fullproduct_id:([^/]+)?>', fullproduct),
+	webapp2.Route(r'/<account_id:([^/]+)?>/<dataflow_id:([^/]+)?>/products/<product_id:([^/]+)?>', ProductPage),
 	webapp2.Route(r'/processes', ProcessesPage),
 	webapp2.Route(r'/processes/<process_id:([^/]+)?>', ProcessPage),
-	webapp2.Route(r'/<account_id:([^/]+)?>/<dataflow_id:([^/]+)?>/settings', SettingsPage),
+
 	webapp2.Route(r'/<account_id:([^/]+)?>/<dataflow_id:([^/]+)?>/serviceTypes', SettingsServiceTypesPage),
 	webapp2.Route(r'/<account_id:([^/]+)?>/<dataflow_id:([^/]+)?>/settingsInputKeys', settingsInputKeysPage),
 	webapp2.Route(r'/<account_id:([^/]+)?>/<dataflow_id:([^/]+)?>/settingsMapServicesKeys', settingsMapServicesKeys),

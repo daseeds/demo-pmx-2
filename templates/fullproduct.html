@@ -1,0 +1,32 @@
+{% extends "base2.html" %}
+{% import 'forms.html' as forms %}
+{% block content %}
+
+
+<h1>Full Product description</h1>
+
+<div class="col-md-6">
+	<h2>BOM</h2>
+	<div class="panel panel-default">
+		<table class="table table-striped">
+			<tbody>
+				{% for properti in consumables %}
+
+				<tr>
+					<td>{{properti.name}}</td>
+					<td>{{properti.value}}</td>
+				</tr>
+
+				{% endfor %}
+			</tbody>
+		</table>
+	</div>
+</div>
+
+
+
+
+
+
+
+{% endblock content %}
