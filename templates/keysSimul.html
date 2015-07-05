@@ -78,9 +78,9 @@
 	<thead>
 		<tr>
 			<th>Name</th>
-			<th>Product</th>
+			<th class="col-md-4">Product</th>
 			{% for serviceType in serviceTypes %}
-			<th>{{serviceType.get().name}}</th>
+			<th class="col-md-4">{{serviceType.get().name}}</th>
 			{% endfor %}
 			<th>Action</th>
 		</tr>
@@ -89,14 +89,14 @@
 		<form role="form-inline" action="/{{account_id}}/{{dataflow_id}}/matrix" method="post">
 		<tr>
 			<td>{{ forms.input('', 'name', value='', type='text') }}</td>
-			<td class="col-md-4">
+			<td>
 				<a href="/{{account_id}}/{{dataflow_id}}/products/{{newfullProduct.product.get().key.id()}}">
 					{{newfullProduct.product.get().reference}}
 				</a>
 				{{ forms.input('', 'product', value=newfullProduct.product.get().reference, type='hidden') }}
 			</td>
 			{% for service in newfullProduct.services %}
-			<td class="col-md-4">
+			<td >
 				<a href="/{{account_id}}/{{dataflow_id}}/services/{{service.get().key.id()}}">
 					{{service.get().reference}}
 				</a>
