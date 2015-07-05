@@ -89,14 +89,14 @@
 		<form role="form-inline" action="/{{account_id}}/{{dataflow_id}}/matrix" method="post">
 		<tr>
 			<td>{{ forms.input('', 'name', value='', type='text') }}</td>
-			<td>
+			<td class="col-md-4">
 				<a href="/{{account_id}}/{{dataflow_id}}/products/{{newfullProduct.product.get().key.id()}}">
 					{{newfullProduct.product.get().reference}}
 				</a>
 				{{ forms.input('', 'product', value=newfullProduct.product.get().reference, type='hidden') }}
 			</td>
 			{% for service in newfullProduct.services %}
-			<td>
+			<td class="col-md-4">
 				<a href="/{{account_id}}/{{dataflow_id}}/services/{{service.get().key.id()}}">
 					{{service.get().reference}}
 				</a>
