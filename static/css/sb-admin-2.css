@@ -61,3 +61,16 @@
 .panel-yellow a:hover {
     color: #df8a13;
 }
+
+select, table, td, tr{
+  box-sizing:content-box;
+
+}
+
+select {
+width:197px;
+}
+
+.form-control{
+  width:197px;
+}

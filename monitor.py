@@ -496,7 +496,6 @@ class ProductPage(BaseHandler):
 
 		product = Product.get_by_id(int(product_id))
 
-
    		template_values = {
 			'product': product,
 			'site_list': site_list,
@@ -536,7 +535,7 @@ class ProductPage(BaseHandler):
 			product.inputKeys.remove(self.request.get("id"))
 			product.put()
 
-		self.redirect('/products/{0}'.format(unicode(product_id)))
+		self.redirect('/{0}/{1}/products/{2}'.format(account_id, dataflow_id, unicode(product_id)))
 
 
 class services(BaseHandler):

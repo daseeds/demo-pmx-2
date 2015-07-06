@@ -2,6 +2,7 @@
 /* No media query since this is the default in Bootstrap */
 
 
+
 body {
 
   height: 100%;
@@ -49,17 +50,17 @@ a.navbar-brand {
   /* Fallback for web browsers that doesn't support RGBa */
   background: rgb(0, 0, 0);
   /* RGBa with 0.6 opacity */
-  background: rgba(0, 0, 0, 0.6); 
+  background: rgba(0, 0, 0, 0.6);
   text-align: center;
 }
 
 /*.panel {
-  
+
 
   background: rgb(0, 0, 0);
-  
 
-  background: rgba(0, 0, 0, 0.6); 
+
+  background: rgba(0, 0, 0, 0.6);
 
   border-color: #000;
 }*/
@@ -303,8 +304,10 @@ iframe[seamless]{
    overflow: hidden;
 }
 
+
+
 /* Small devices (tablets, 768px and up) */
-@media (min-width: 768px) { 
+@media (min-width: 768px) {
   /* Remove the padding we set earlier */
   .header,
   .marketing,
@@ -386,7 +389,7 @@ line-height: 37px;
 }
  .scroll-arrow:before {
   /*font-family: 'squarespace-ui-font';*/
-  
+
   font-family: "FontAwesome";
   src: url('/static/font-awesome/fonts/fontawesome-webfont.eot');
   src: url('/static/font-awesome/fonts/fontawesome-webfont.eot?#iefix') format('eot'), url('/static/font-awesome/fonts/fontawesome-webfont.woff') format('woff'), url('/static/font-awesome/fonts/fontawesome-webfont.ttf') format('truetype'), url('/static/font-awesome/fonts/fontawesome-webfont.svg#FontAwesomeRegular') format('svg');
@@ -434,7 +437,7 @@ line-height: 37px;
 }
 
 /* Medium devices (desktops, 992px and up) */
-@media (min-width: 992px) {   
+@media (min-width: 992px) {
   .slides-container h1 {
     font-weight: 700;
     font-size: 45px;
@@ -444,7 +447,7 @@ line-height: 37px;
     text-transform: uppercase;
     font-style: bold;
     letter-spacing: 1px;
-  } 
+  }
 
 .slides-text-container {
   position: relative;
@@ -470,10 +473,12 @@ a.navbar-brand {
 
 }
 
+
+
 }
 
 /* Large devices (large desktops, 1200px and up) */
-@media (min-width: 1200px) { 
+@media (min-width: 1200px) {
 
   .slides-container h1 {
     font-weight: 700;
