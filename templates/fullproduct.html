@@ -10,11 +10,12 @@
 	<div class="panel panel-default">
 		<table class="table table-striped">
 			<tbody>
-				{% for properti in consumables %}
+				{% for item in consumables %}
 
 				<tr>
-					<td>{{properti.name}}</td>
-					<td>{{properti.value}}</td>
+					<td>{{item.get().kind}}</td>
+					<td>{{item.get().value}}</td>
+					<td>{{item.get().site}}</td>
 				</tr>
 
 				{% endfor %}
@@ -23,6 +24,9 @@
 	</div>
 </div>
 
+TODO:
+* List of availalbe processes. Default process.
+* Process is defined by: A site, A list of services, A machine type, A defaultness
 
 
 

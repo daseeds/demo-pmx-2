@@ -1,0 +1,66 @@
+{% extends "base2.html" %}
+{% import 'forms.html' as forms %}
+{% block content %}
+
+
+<h2>Items</h2>
+
+<a href="#" class="btn btn-primary active" role="button">Import from .csv...</a>
+<a href="#" class="btn btn-primary active" role="button">Find duplicated ERP references</a>
+<a href="#" class="btn btn-primary active" role="button">Find unused items</a>
+
+<table class="table table-striped">
+	<thead>
+		<tr>
+			<th>Type</th>
+			<th>ERP Reference</th>
+			<th>Site</th>
+			<th>Account</th>
+			<th>Dataflow</th>
+			<th>Creation date</th>
+			<th>Live date</th>
+			<th>Expiration date</th>
+			<th>Actions</th>
+		</tr>
+	</thead>
+	<tbody>
+		{% for item in items %}
+		<tr>
+			<th scope="row"><a href="/{{account_id}}/{{dataflow_id}}/items/{{item.key.id()}}">{{item.kind}}</a></th>
+			<td>{{item.value}}</a></td>
+			<td>{{item.site}}</a></td>
+			<td>{{item.account}}</a></td>
+			<td>{{item.dataflow}}</a></td>
+			<td>{{item.creation}}</a></td>
+			<td>{{item.expiration}}</a></td>
+			<td>{{item.goLive}}</a></td>
+
+			<td>
+				<form role="form-inline" action="/{{account_id}}/{{dataflow_id}}/items" method="post">
+					{{ forms.submit_button('Delete', 'btn-xs') }}
+					{{ forms.input('', 'item_id', value=item.key.id(), type='hidden') }}
+					{{ forms.input('', 'action', value='delete', type='hidden') }}
+				</form>
+			</td>
+		</tr>
+		{% endfor %}
+		<tr>
+			<form class="form-inline" role="form" action="/{{account_id}}/{{dataflow_id}}/items" method="post">
+				<td>{{ forms.select('', 'kind', itemKinds, itemKinds[0]) }}</td>
+				<td>{{ forms.input('', 'value', value='', type='text') }}</td>
+				<td>{{ forms.select('', 'site', site_list, site_list[0]) }}</td>
+				<td>{{ forms.select('', 'account', accountList, accountList[0]) }}</td>
+				<td>{{ forms.select('', 'dataflow', dataflowList, dataflowList[0]) }}</td>
+				<td>{{ forms.submit_button('Add') }}{{ forms.input('', 'action', value='add', type='hidden') }}</td>
+			</form>
+		</tr>
+	</tbody>
+</table>
+
+
+
+
+
+
+
+{% endblock content %}

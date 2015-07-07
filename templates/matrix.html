@@ -21,7 +21,7 @@
 	<tbody>
 		{% for fullProduct in fullProducts %}
 		<tr>
-			<td><a href="/{{account_id}}/{{dataflow_id}}/matrix/{{fullProduct.key.id()}}">{{fullProduct.name}}</a></td>
+			<td><a class="btn btn-primary btn-xs" href="/{{account_id}}/{{dataflow_id}}/matrix/{{fullProduct.key.id()}}" role="button">Open</a> {{fullProduct.name}}</td>
 			<td><a href="/{{account_id}}/{{dataflow_id}}/products/{{fullProduct.product.get().key.id()}}">{{fullProduct.product.get().reference}}</a></td>
 			{% for service in fullProduct.services %}
 			<td><a href="/{{account_id}}/{{dataflow_id}}/services/{{service.get().key.id()}}">{{service.get().reference}}</a></td>

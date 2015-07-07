@@ -6,7 +6,7 @@
 
 <h1>Service - {{service.stype}} - {{service.reference}}</h1>
 
-<h4>Properties</h4>
+<h4>Items</h4>
 
 <table class="table table-striped">
 	<thead>
@@ -37,10 +37,7 @@
 	</tbody>
 </table>
 <form class="form-inline" role="form" action="/{{account_id}}/{{dataflow_id}}/services/{{service.key.id()}}" method="post">
-	{{ forms.input('name', 'name') }}
-	{{ forms.input('value', 'value') }}
-	{{ forms.select('Site', 'site', site_list) }}
-	{{ forms.select('Kind', 'kind', propertyKind) }}
+	{{ forms.select_2('', 'item', itemsList) }}
 	{{ forms.input('', 'type', value='properties', type='hidden') }}
 	{{ forms.submit_button('Add') }}
 </form>

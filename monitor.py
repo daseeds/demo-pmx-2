@@ -74,15 +74,17 @@ class BaseHandler(webapp2.RequestHandler):
 		fullProduct = FullProduct.get_by_id(int(fullProduct_Id))
 
 		keys = []
-		keys.extend(fullProduct.services)
-		keys.append(fullProduct.product)
 
+
+		for service in fullProduct.services:
+			keys.extend(service.get().properties)
+			logging.info(service.get().stype)
+			logging.info(service.get().properties)
+
+		keys.extend(fullProduct.product.get().properties)
 		logging.info(keys)
 
-		matrix['consumables'] = Property.query(Property.kind=="Consumable",
-											Property.account==account,
-											Property.dataflow==dataflow,
-									 	     Property.parent.IN(keys)).fetch()
+		matrix['consumables'] = keys
 
 		logging.info(matrix['consumables'])
 
@@ -159,15 +161,6 @@ class BaseHandler(webapp2.RequestHandler):
 
 		matrix['processes'] = processes
 
-		matrix['instrumentation'] = Property.query(Property.kind=="Instrumentation",
-												Property.parent.IN(keys)).fetch()
-		matrix['properties'] = Property.query(Property.kind=="Property",
-									Property.parent.IN(keys)).fetch()
-		matrix['consumable'] = Property.query(Property.kind=="Consumable",
-												Property.parent.IN(keys)).fetch()
-
-		matrix['instructions'] = Property.query(Property.kind=="Instruction",
-												Property.parent.IN(keys)).fetch()
 
 
 		logging.info(matrix)
@@ -289,13 +282,12 @@ class ProcessPage(BaseHandler):
 		process = Process.get_by_id(int(process_id))
 
 		if self.request.get("type") == "properties":
-			prop = Property(site=self.request.get("site"),
+			prop = Item(site=self.request.get("site"),
 							name=self.request.get("name"),
 							value=self.request.get("value"),
 							kind=self.request.get("kind"))
-			prop.parent = process.key
 			prop.put()
-			process.properties.append(ndb.Key(Property, prop.key.id()))
+			process.properties.append(ndb.Key(Item, prop.key.id()))
 			process.put()
 
 		if self.request.get("type") == "addSite":
@@ -324,7 +316,7 @@ class ProcessPage(BaseHandler):
 			process.put()
 
 		if self.request.get("type") == "deleteProperty":
-			prop = ndb.Key(Property, int(self.request.get("id")))
+			prop = ndb.Key(Item, int(self.request.get("id")))
 			process.properties.remove(prop)
 			process.put()
 			prop.delete()
@@ -472,10 +464,14 @@ class ProductsPage(BaseHandler):
 
 		products = Product.query(Product.account == account_id,
 						Product.dataflow == dataflow_id).fetch()
+
+
+
    		template_values = {
 			'products': products,
 			'account_id': account_id,
 			'dataflow_id': dataflow_id,
+
 		}
 		return self.render_response('products.html', **template_values)
 	def post(self, account_id, dataflow_id):
@@ -496,12 +492,22 @@ class ProductPage(BaseHandler):
 
 		product = Product.get_by_id(int(product_id))
 
+		items = Item.query(ndb.OR(Item.dataflow == dataflow_id, Item.dataflow == 'All'),
+						   ndb.OR(Item.account == account_id, Item.account == 'All'))
+		itemsList = []
+		for item in items:
+			itemD = dict()
+			itemD['value'] = item.key.id()
+			itemD['text'] = item.kind + ' - ' + item.value + ' - ' + item.site
+			itemsList.append(itemD)
+
    		template_values = {
 			'product': product,
 			'site_list': site_list,
 			'propertyKind': propertyKind,
 			'account_id': account_id,
 			'dataflow_id': dataflow_id,
+			'itemsList': itemsList,
 		}
 		return self.render_response('product.html', **template_values)
 
@@ -510,15 +516,7 @@ class ProductPage(BaseHandler):
 		product = Product.get_by_id(int(product_id))
 
 		if self.request.get("type") == "properties":
-			prop = Property(site=self.request.get("site"),
-							name=self.request.get("name"),
-							value=self.request.get("value"),
-							account = account_id,
-							dataflow = dataflow_id,
-							kind=self.request.get("kind"))
-			prop.parent = product.key
-			prop.put()
-			product.properties.append(ndb.Key(Property, prop.key.id()))
+			product.properties.append(ndb.Key(Item, int(self.request.get("item"))))
 			product.put()
 
 		if self.request.get("type") == "inputKeys":
@@ -526,10 +524,9 @@ class ProductPage(BaseHandler):
 			product.put()
 
 		if self.request.get("type") == "deleteProperty":
-			prop = ndb.Key(Property, int(self.request.get("id")))
+			prop = ndb.Key(Item, int(self.request.get("id")))
 			product.properties.remove(prop)
 			product.put()
-			prop.delete()
 
 		if self.request.get("type") == "deleteInputKey":
 			product.inputKeys.remove(self.request.get("id"))
@@ -628,6 +625,14 @@ class service(BaseHandler):
 
 		service = Service.get_by_id(int(service_id))
 
+		items = Item.query(ndb.OR(Item.dataflow == dataflow_id, Item.dataflow == 'All'),
+						   ndb.OR(Item.account == account_id, Item.account == 'All'))
+		itemsList = []
+		for item in items:
+			itemD = dict()
+			itemD['value'] = item.key.id()
+			itemD['text'] = item.kind + ' - ' + item.value + ' - ' + item.site
+			itemsList.append(itemD)
 
    		template_values = {
 			'service': service,
@@ -635,6 +640,7 @@ class service(BaseHandler):
 			'account_id': account_id,
 			'dataflow_id': dataflow_id,
 			'propertyKind': propertyKind,
+			'itemsList': itemsList,
 
 		}
 		return self.render_response('service.html', **template_values)
@@ -644,15 +650,8 @@ class service(BaseHandler):
 		service = Service.get_by_id(int(service_id))
 
 		if self.request.get("type") == "properties":
-			prop = Property(site=self.request.get("site"),
-							name=self.request.get("name"),
-							value=self.request.get("value"),
-							account = account_id,
-							dataflow = dataflow_id,
-							kind=self.request.get("kind"))
-			prop.parent = service.key
-			prop.put()
-			service.properties.append(ndb.Key(Property, prop.key.id()))
+
+			service.properties.append(ndb.Key(Item, int(self.request.get("item"))))
 			service.put()
 
 		if self.request.get("type") == "inputKeys":
@@ -660,10 +659,9 @@ class service(BaseHandler):
 			service.put()
 
 		if self.request.get("type") == "deleteProperty":
-			prop = ndb.Key(Property, int(self.request.get("id")))
+			prop = ndb.Key(Item, int(self.request.get("id")))
 			service.properties.remove(prop)
 			service.put()
-			prop.delete()
 
 		if self.request.get("type") == "deleteInputKey":
 			service.inputKeys.remove(self.request.get("id"))
@@ -680,7 +678,7 @@ class matrix(BaseHandler):
 								  Dataflow.account == account_id).fetch()[0]
 
 		fullProducts = FullProduct.query(FullProduct.dataflow == dataflow_id,
-								   FullProduct.account == account_id).fetch()
+								   		FullProduct.account == account_id).fetch()
 
 		products = Product.query(Product.account == account_id,
 								Product.dataflow == dataflow_id).fetch()
@@ -899,6 +897,61 @@ class fullproduct(BaseHandler):
 
 		return self.render_response('fullproduct.html', **template_values)
 
+class items(BaseHandler):
+   	def get(self, account_id, dataflow_id):
+
+		items = Item.query(ndb.OR(Item.dataflow == dataflow_id, Item.dataflow == 'All'),
+						   ndb.OR(Item.account == account_id, Item.account == 'All'))
+
+		accountList = []
+		accountList.append(account_id)
+		accountList.append('All')
+
+		dataflowList = []
+		dataflowList.append('All')
+		dataflowList.append(dataflow_id)
+
+   		template_values = {
+			'account_id': account_id,
+			'dataflow_id': dataflow_id,
+			'items': items,
+			'itemKinds': propertyKind,
+			'site_list': site_list,
+			'accountList': accountList,
+			'dataflowList': dataflowList,
+		}
+		return self.render_response('items.html', **template_values)
+	def post(self, account_id, dataflow_id):
+
+		if self.request.get("action") == 'add':
+			item = Item(value = self.request.get("value"),
+						kind = self.request.get("kind"),
+						account = self.request.get("account"),
+						dataflow = self.request.get("dataflow"),
+						site = self.request.get("site"))
+
+			item.put()
+
+		if self.request.get("action") == 'delete':
+			item = ndb.Key(Item, int(self.request.get("item_id")))
+
+			services = Service.query(Service.account == account_id,
+									Service.dataflow == dataflow_id,
+									Service.properties == item)
+			for service in services:
+				service.properties.remove (item)
+				service.put()
+
+			products = Product.query(Product.account == account_id,
+									Product.dataflow == dataflow_id,
+									Product.properties == item)
+			for product in products:
+				product.properties.remove (item)
+				product.put()
+
+			item.delete()
+
+		self.redirect('/{0}/{1}/items'.format(account_id, dataflow_id))
 
 class TestPage(BaseHandler):
 	def get(self):
@@ -1076,6 +1129,7 @@ application = webapp2.WSGIApplication([
 	webapp2.Route(r'/<account_id:([^/]+)?>/<dataflow_id:([^/]+)?>/processes', ProcessesPage),
 	webapp2.Route(r'/<account_id:([^/]+)?>/<dataflow_id:([^/]+)?>/processes/<process_id:([^/]+)?>', ProcessPage),
 	webapp2.Route(r'/<account_id:([^/]+)?>/<dataflow_id:([^/]+)?>/keysSimul', keysSimul),
+	webapp2.Route(r'/<account_id:([^/]+)?>/<dataflow_id:([^/]+)?>/items', items),
 
 	webapp2.Route(r'/<account_id:([^/]+)?>/<dataflow_id:([^/]+)?>/serviceTypes', SettingsServiceTypesPage),
 	webapp2.Route(r'/<account_id:([^/]+)?>/<dataflow_id:([^/]+)?>/settingsInputKeys', settingsInputKeysPage),
