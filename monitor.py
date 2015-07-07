@@ -254,26 +254,29 @@ class ProcessPage(BaseHandler):
 
 		process = Process.get_by_id(int(process_id))
 
-		electrical_list = self.getKeyList(Service.query(Service.stype == "Electrical").fetch())
-		graphical_list = self.getKeyList(Service.query(Service.stype == "Graphical").fetch())
-		carrier_list = self.getKeyList(Service.query(Service.stype == "Carrier").fetch())
-		packaging_list = self.getKeyList(Service.query(Service.stype == "Packaging").fetch())
-		dispatch_list = self.getKeyList(Service.query(Service.stype == "Dispatch").fetch())
-		SLA_list = self.getKeyList(Service.query(Service.stype == "SLA").fetch())
+		services = Service.query(Service.account == account_id,
+								 Service.dataflow == dataflow_id).order(Service.stype).fetch()
+		dataflow = Dataflow.query(Dataflow.reference == dataflow_id,
+								  Dataflow.account == account_id).fetch()[0]
 
+
+		serviceTypeList = []
+		for serviceType in dataflow.serviceTypes:
+			services = Service.query(Service.account == account_id,
+								 	 Service.dataflow == dataflow_id,
+									 Service.serviceType == serviceType).order(Service.stype).fetch()
+			serviceList = []
+			for service in services:
+				serviceList.append(service.reference)
+			serviceTypeList.append(serviceList)
 
    		template_values = {
 			'account_id': account_id,
 			'dataflow_id': dataflow_id,
 			'process': process,
 			'site_list': site_list,
-			'propertyKind': propertyKind,
-			'electrical_list': electrical_list,
-			'graphical_list': graphical_list,
-			'carrier_list': carrier_list,
-			'packaging_list': packaging_list,
-			'dispatch_list': dispatch_list,
-			'SLA_list': SLA_list,
+			'serviceTypeList': serviceTypeList,
+			'serviceTypes': dataflow.serviceTypes,
 		}
 		return self.render_response('process.html', **template_values)
 
