@@ -662,7 +662,7 @@ class service(BaseHandler):
 		for item in items:
 			itemD = dict()
 			itemD['value'] = item.key.id()
-			itemD['text'] = item.kind + ' - ' + item.value + ' - ' + item.site
+			itemD['text'] = item.kind + ' - ' + item.value + ' - ' + item.desc' - ' + item.site
 			itemsList.append(itemD)
 
    		template_values = {
