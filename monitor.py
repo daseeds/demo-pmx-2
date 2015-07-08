@@ -493,11 +493,15 @@ class ProductsPage(BaseHandler):
 
 		products = Product.query(Product.account == account_id,
 						Product.dataflow == dataflow_id).fetch()
+		dataflow = Dataflow.query(Dataflow.reference == dataflow_id).fetch()[0]
 
    		template_values = {
 			'products': products,
 			'account_id': account_id,
 			'dataflow_id': dataflow_id,
+			'dataflow': dataflow,
+			'inputKeys': dataflow.inputKeys,
+			'serviceTypes': dataflow.serviceTypes,
 		}
 		return self.render_response('products.html', **template_values)
 	def post(self, account_id, dataflow_id):

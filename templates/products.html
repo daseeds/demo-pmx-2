@@ -10,15 +10,35 @@
 		<tr>
 			<th>Reference</th>
 			<th>Order Item</th>
-			<th>input Key</th>
+			{% for inputKey in inputKeys %}
+			{% if dataflow.productKeysMap[loop.index0] %}
+			<th>{{inputKey}}</th>
+			{% endif %}
+			{% endfor %}
+			<th>Action</th>
 		</tr>
 	</thead>
 	<tbody>
 		{% for product in products %}
 		<tr>
 			<th scope="row"><a href="/{{account_id}}/{{dataflow_id}}/products/{{product.key.id()}}">{{product.reference}}</a></th>
-			<td>{{product.orderItem}}</a></td>
+			<form role="form-inline" action="/{{account_id}}/{{dataflow_id}}/products" method="post">
+			<td>{{ forms.input('', 'orderItem', value=product.orderItem, type='text') }}</td>
+			{% set i = 0 %}
+			{% for inputKey in inputKeys %}
 			<td>
+				{% if dataflow.productKeysMap[i] %}
+				{% set ref = product.reference + '-' + inputKey %}
+				{{ forms.input('', ref, value=product.inputKeys[i], type='text') }}
+				{% endif %}
+			</td>
+			{% set i = i + 1 %}
+			{% endfor %}
+			<td>
+
+					{{ forms.submit_button('Save', 'btn-xs') }}
+					{{ forms.input('', 'process_id', value=product.key.id(), type='hidden') }}
+				</form>
 				<form role="form-inline" action="/{{account_id}}/{{dataflow_id}}/products" method="post">
 					{{ forms.submit_button('Delete', 'btn-xs') }}
 					{{ forms.input('', 'process_id', value=product.key.id(), type='hidden') }}
