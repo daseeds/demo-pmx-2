@@ -15,8 +15,6 @@
 			<th>Type</th>
 			<th>ERP Reference</th>
 			<th>Description</th>
-			<th>Parameter 1</th>
-			<th>Parameter 2</th>
 			<th>Site</th>
 			<th>Account</th>
 			<th>Dataflow</th>
@@ -32,14 +30,12 @@
 			<th scope="row"><a href="/{{account_id}}/{{dataflow_id}}/items/{{item.key.id()}}">{{item.kind}}</a></th>
 			<td>{{item.value}}</a></td>
 			<td>{{item.desc}}</a></td>
-			<td>{{item.paramter1}}</a></td>
-			<td>{{item.paramter2}}</a></td>
 			<td>{{item.site}}</a></td>
 			<td>{{item.account}}</a></td>
 			<td>{{item.dataflow}}</a></td>
 			<td>{{item.creation}}</a></td>
-			<td>{{item.expiration}}</a></td>
 			<td>{{item.goLive}}</a></td>
+			<td>{{item.expiration}}</a></td>
 
 			<td>
 				<form role="form-inline" action="/{{account_id}}/{{dataflow_id}}/items" method="post">
@@ -52,11 +48,9 @@
 		{% endfor %}
 		<tr>
 			<form class="form-inline" role="form" action="/{{account_id}}/{{dataflow_id}}/items" method="post">
-				<td>{{ forms.select('', 'kind', itemKinds, itemKinds[0]) }}</td>
+				<td>{{ forms.select('', 'kind', itemTypesList, itemTypesList[0]) }}</td>
 				<td>{{ forms.input('', 'value', value='', type='text') }}</td>
 				<td>{{ forms.input('', 'desc', value='', type='text') }}</td>
-				<td>{{ forms.input('', 'parameter1', value='', type='text') }}</td>
-				<td>{{ forms.input('', 'parameter2', value='', type='text') }}</td>
 				<td>{{ forms.select('', 'site', site_list, site_list[0]) }}</td>
 				<td>{{ forms.select('', 'account', accountList, accountList[0]) }}</td>
 				<td>{{ forms.select('', 'dataflow', dataflowList, dataflowList[0]) }}</td>

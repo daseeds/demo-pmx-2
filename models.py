@@ -59,7 +59,7 @@ class Item(ndb.Model):
 	name = ndb.StringProperty(default="")
 	value = ndb.StringProperty(default="")
 	site = ndb.StringProperty(default="", choices=site_list)
-	kind = ndb.StringProperty(default=propertyKind[0], choices=propertyKind)
+	kind = ndb.StringProperty()
 	dataflow = ndb.StringProperty(default="")
 	account = ndb.StringProperty(default="")
 	creation = ndb.DateTimeProperty(auto_now=True)
