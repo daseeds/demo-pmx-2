@@ -74,19 +74,26 @@ class BaseHandler(webapp2.RequestHandler):
 		fullProduct = FullProduct.get_by_id(int(fullProduct_Id))
 
 		keys = []
-
-
+		instrumentations = []
 		for service in fullProduct.services:
 			keys.extend(service.get().properties)
-			logging.info(service.get().stype)
-			logging.info(service.get().properties)
+			for item in service.get().properties:
+				logging.info(item)
+				itemType = ItemType.query(ItemType.name == item.get().kind).fetch()
+				if itemType:
+					itemInstru = dict()
+					itemInstru['tag'] = itemType[0].tag
+					itemInstru['value'] = item.get().desc
+					instrumentations.append(itemInstru)
+
 
 		keys.extend(fullProduct.product.get().properties)
-		logging.info(keys)
 
 		matrix['consumables'] = keys
+		matrix['instrumentations'] = instrumentations
 
-		logging.info(matrix['consumables'])
+
+		logging.info(matrix)
 
 		return matrix
 
@@ -910,6 +917,7 @@ class fullproduct(BaseHandler):
 
    		template_values = {
 			'consumables': matrix['consumables'],
+			'instrumentations': matrix['instrumentations'],
 			'account_id': account_id,
 			'dataflow_id': dataflow_id,
 		}
@@ -930,6 +938,12 @@ class items(BaseHandler):
 		dataflowList.append('All')
 		dataflowList.append(dataflow_id)
 
+		itemTypes = ItemType.query().fetch()
+		itemTypesList = []
+		for itemType in itemTypes:
+			itemTypesList.append(itemType.name)
+
+
    		template_values = {
 			'account_id': account_id,
 			'dataflow_id': dataflow_id,
@@ -938,6 +952,7 @@ class items(BaseHandler):
 			'site_list': site_list,
 			'accountList': accountList,
 			'dataflowList': dataflowList,
+			'itemTypesList': itemTypesList,
 		}
 		return self.render_response('items.html', **template_values)
 	def post(self, account_id, dataflow_id):
@@ -947,8 +962,6 @@ class items(BaseHandler):
 						kind = self.request.get("kind"),
 						account = self.request.get("account"),
 						dataflow = self.request.get("dataflow"),
-						parameter1 = self.request.get("parameter1"),
-						parameter2 = self.request.get("parameter2"),
 						desc = self.request.get("desc"),
 						site = self.request.get("site"))
 
