@@ -48,28 +48,23 @@
 <table class="table table-striped">
 	<thead>
 		<tr>
-			<th>Value</th>
+			{% for inputKeysName in inputKeysNames %}
+			<th>{{inputKeysName}}</th>
+			{% endfor %}
 		</tr>
 	</thead>
 	<tbody>
-		{% for properti in service.inputKeys %}
 		<tr>
-			<td>{{properti}}</td>
+			{% for inputKey in service.inputKeys %}
 			<td>
-				<form role="form-inline" action="/services/{{service.key.id()}}" method="post">
-					{{ forms.submit_button('Delete', 'btn-xs') }}
-					{{ forms.input('', 'type', value='deleteInputKey', type='hidden') }}
-					{{ forms.input('', 'id', value=properti, type='hidden') }}
-				</form>
+				{{ forms.input('', ref, value=inputKey, type='text') }}
 			</td>
+			{% endfor %}
 		</tr>
-		{% endfor %}
 	</tbody>
 </table>
 <form class="form-inline" role="form" action="/services/{{service.key.id()}}" method="post">
-	{{ forms.input('value', 'value') }}
-	{{ forms.input('', 'type', value='inputKeys', type='hidden') }}
-	{{ forms.submit_button('Add') }}
+	{{ forms.submit_button('Save') }}
 </form>
 
 
