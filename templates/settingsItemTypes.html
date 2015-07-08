@@ -1,0 +1,51 @@
+{% extends "base2.html" %}
+{% import 'forms.html' as forms %}
+{% block content %}
+
+
+
+<h1>Settings</h1>
+
+<e>If tag is specified, instrumentation is activated for this item type</e>
+
+<h3>Item type</h3>
+<table class="table table-striped">
+	<thead>
+		<tr>
+			<th>Name</th>
+			<th>Tag</th>
+			<th>Action</th>
+		</tr>
+	</thead>
+	<tbody>
+		{% for itemType in itemTypes %}
+		<tr>
+			<th scope="row">{{itemType.name}}</a></th>
+			<th scope="row">{{itemType.tag}}</a></th>
+			<td>
+				<form role="form-inline" action="/{{account_id}}/{{dataflow_id}}/settingsItemTypes" method="post">
+					{{ forms.submit_button('Delete', 'btn-xs') }}
+					{{ forms.input('', 'action', value='delete', type='hidden') }}
+					{{ forms.input('', 'id', value=itemType.key.id(), type='hidden') }}
+				</form>
+			</td>
+		</tr>
+		{% endfor %}
+		<tr>
+			<form class="form-inline" role="form" action="/{{account_id}}/{{dataflow_id}}/settingsItemTypes" method="post">
+				<td>{{ forms.input('', 'name', value='', type='text') }}</td>
+				<td>{{ forms.input('', 'tag', value='', type='text') }}</td>
+				{{ forms.input('', 'action', value='add', type='hidden') }}
+				<td>{{ forms.submit_button('Add') }}</td>
+			</form>
+		</tr>
+	</tbody>
+</table>
+
+
+
+
+
+
+
+{% endblock content %}

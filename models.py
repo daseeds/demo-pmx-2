@@ -6,7 +6,7 @@ from google.appengine.ext import ndb
 
 sessionState = ["run", "stop"]
 site_list = ["All", "Gemenos", "Balrup", "Tours", "Fareham"]
-propertyKind = ["SecureElement", "Carrier", "Envelope", "Indent", "Sticker", "Topping"]
+propertyKind = ["SecureElement", "Carrier", "Insert", "Envelope", "Indent", "Sticker", "Topping"]
 
 class Account(ndb.Model):
 	reference = ndb.StringProperty(default="")
@@ -65,7 +65,11 @@ class Item(ndb.Model):
 	creation = ndb.DateTimeProperty(auto_now=True)
 	expiration = ndb.DateTimeProperty()
 	goLive = ndb.DateTimeProperty()
+	desc = ndb.StringProperty(default="")
 
+class ItemType(ndb.Model):
+	name = ndb.StringProperty(default="")
+	tag = ndb.StringProperty(default="")
 
 class Process(ndb.Model):
 	reference = ndb.StringProperty(default="")

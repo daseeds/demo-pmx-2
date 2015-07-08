@@ -254,29 +254,26 @@ class ProcessPage(BaseHandler):
 
 		process = Process.get_by_id(int(process_id))
 
-		services = Service.query(Service.account == account_id,
-								 Service.dataflow == dataflow_id).order(Service.stype).fetch()
-		dataflow = Dataflow.query(Dataflow.reference == dataflow_id,
-								  Dataflow.account == account_id).fetch()[0]
+		electrical_list = self.getKeyList(Service.query(Service.stype == "Electrical").fetch())
+		graphical_list = self.getKeyList(Service.query(Service.stype == "Graphical").fetch())
+		carrier_list = self.getKeyList(Service.query(Service.stype == "Carrier").fetch())
+		packaging_list = self.getKeyList(Service.query(Service.stype == "Packaging").fetch())
+		dispatch_list = self.getKeyList(Service.query(Service.stype == "Dispatch").fetch())
+		SLA_list = self.getKeyList(Service.query(Service.stype == "SLA").fetch())
 
-
-		serviceTypeList = []
-		for serviceType in dataflow.serviceTypes:
-			services = Service.query(Service.account == account_id,
-								 	 Service.dataflow == dataflow_id,
-									 Service.serviceType == serviceType).order(Service.stype).fetch()
-			serviceList = []
-			for service in services:
-				serviceList.append(service.reference)
-			serviceTypeList.append(serviceList)
 
    		template_values = {
 			'account_id': account_id,
 			'dataflow_id': dataflow_id,
 			'process': process,
 			'site_list': site_list,
-			'serviceTypeList': serviceTypeList,
-			'serviceTypes': dataflow.serviceTypes,
+			'propertyKind': propertyKind,
+			'electrical_list': electrical_list,
+			'graphical_list': graphical_list,
+			'carrier_list': carrier_list,
+			'packaging_list': packaging_list,
+			'dispatch_list': dispatch_list,
+			'SLA_list': SLA_list,
 		}
 		return self.render_response('process.html', **template_values)
 
@@ -431,6 +428,28 @@ class settingsMapServicesKeys(BaseHandler):
 
 		self.redirect('/{0}/{1}/settingsMapServicesKeys'.format(account_id, dataflow_id))
 
+class settingsItemTypes(BaseHandler):
+   	def get(self, account_id, dataflow_id):
+
+		itemTypes = ItemType.query().fetch()
+   		template_values = {
+			'account_id': account_id,
+			'dataflow_id': dataflow_id,
+			'itemTypes': itemTypes,
+		}
+		return self.render_response('settingsItemTypes.html', **template_values)
+	def post(self, account_id, dataflow_id):
+
+		if self.request.get("action") == 'add':
+			itemType = ItemType(name = self.request.get("name"),
+						tag =  self.request.get("tag"))
+			itemType.put()
+
+		if self.request.get("action") == 'delete':
+			itemType = ndb.Key(ItemType, int(self.request.get("item_id")))
+			itemType.delete()
+
+		self.redirect('/{0}/{1}/settingsItemTypes'.format(account_id, dataflow_id))
 
 class SettingsPage(BaseHandler):
    	def get(self):
@@ -468,13 +487,10 @@ class ProductsPage(BaseHandler):
 		products = Product.query(Product.account == account_id,
 						Product.dataflow == dataflow_id).fetch()
 
-
-
    		template_values = {
 			'products': products,
 			'account_id': account_id,
 			'dataflow_id': dataflow_id,
-
 		}
 		return self.render_response('products.html', **template_values)
 	def post(self, account_id, dataflow_id):
@@ -931,6 +947,9 @@ class items(BaseHandler):
 						kind = self.request.get("kind"),
 						account = self.request.get("account"),
 						dataflow = self.request.get("dataflow"),
+						parameter1 = self.request.get("parameter1"),
+						parameter2 = self.request.get("parameter2"),
+						desc = self.request.get("desc"),
 						site = self.request.get("site"))
 
 			item.put()
@@ -1137,6 +1156,7 @@ application = webapp2.WSGIApplication([
 	webapp2.Route(r'/<account_id:([^/]+)?>/<dataflow_id:([^/]+)?>/serviceTypes', SettingsServiceTypesPage),
 	webapp2.Route(r'/<account_id:([^/]+)?>/<dataflow_id:([^/]+)?>/settingsInputKeys', settingsInputKeysPage),
 	webapp2.Route(r'/<account_id:([^/]+)?>/<dataflow_id:([^/]+)?>/settingsMapServicesKeys', settingsMapServicesKeys),
+	webapp2.Route(r'/<account_id:([^/]+)?>/<dataflow_id:([^/]+)?>/settingsItemTypes', settingsItemTypes),
 	webapp2.Route(r'/deleteDB', deleteDB),
 	webapp2.Route(r'/test', TestPage),
 	webapp2.Route(r'/test/getJifFromKeys', getJifFromKeys),
