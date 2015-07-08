@@ -650,6 +650,11 @@ class service(BaseHandler):
    	def get(self, account_id, dataflow_id,service_id):
 
 		service = Service.get_by_id(int(service_id))
+		dataflow = Dataflow.query(Dataflow.reference == dataflow_id).fetch()[0]
+		serviceKeyTypes = []
+		for serviceType in dataflow.serviceTypes:
+			serviceKeyTypes.append(serviceType.get().name)
+
 
 		items = Item.query(ndb.OR(Item.dataflow == dataflow_id, Item.dataflow == 'All'),
 						   ndb.OR(Item.account == account_id, Item.account == 'All'))
@@ -667,7 +672,7 @@ class service(BaseHandler):
 			'dataflow_id': dataflow_id,
 			'propertyKind': propertyKind,
 			'itemsList': itemsList,
-
+			'inputKeysNames': dataflow.inputKeys,
 		}
 		return self.render_response('service.html', **template_values)
 
