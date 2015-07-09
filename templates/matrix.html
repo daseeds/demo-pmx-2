@@ -5,7 +5,7 @@
 
 <h1>Matrix</h1>
 
-
+	Export to excel...
 
 	<table class="table table-striped table-hover">
 	<thead>
@@ -24,7 +24,11 @@
 			<td><a class="btn btn-primary btn-xs" href="/{{account_id}}/{{dataflow_id}}/matrix/{{fullProduct.key.id()}}" role="button">Open</a> {{fullProduct.name}}</td>
 			<td><a href="/{{account_id}}/{{dataflow_id}}/products/{{fullProduct.product.get().key.id()}}">{{fullProduct.product.get().reference}}</a></td>
 			{% for service in fullProduct.services %}
-			<td><a href="/{{account_id}}/{{dataflow_id}}/services/{{service.get().key.id()}}">{{service.get().reference}}</a></td>
+			<td><a href="/{{account_id}}/{{dataflow_id}}/services/{{service.get().key.id()}}">{{service.get().reference}}</a><br>
+				{% for item in service.get().properties %}
+				<small>{{item.get().kind}} - {{item.get().value}} - {{item.get().desc}} - {{item.get().site}}</small>
+				{% endfor %}
+			</td>
 			{% endfor %}
 			<td>
 				<form role="form-inline" action="/{{account_id}}/{{dataflow_id}}/matrix" method="post">

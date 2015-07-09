@@ -74,26 +74,19 @@ class BaseHandler(webapp2.RequestHandler):
 		fullProduct = FullProduct.get_by_id(int(fullProduct_Id))
 
 		keys = []
-		instrumentations = []
+
+
 		for service in fullProduct.services:
 			keys.extend(service.get().properties)
-			for item in service.get().properties:
-				logging.info(item)
-				itemType = ItemType.query(ItemType.name == item.get().kind).fetch()
-				if itemType:
-					itemInstru = dict()
-					itemInstru['tag'] = itemType[0].tag
-					itemInstru['value'] = item.get().desc
-					instrumentations.append(itemInstru)
-
+			logging.info(service.get().stype)
+			logging.info(service.get().properties)
 
 		keys.extend(fullProduct.product.get().properties)
+		logging.info(keys)
 
 		matrix['consumables'] = keys
-		matrix['instrumentations'] = instrumentations
 
-
-		logging.info(matrix)
+		logging.info(matrix['consumables'])
 
 		return matrix
 
@@ -650,11 +643,6 @@ class service(BaseHandler):
    	def get(self, account_id, dataflow_id,service_id):
 
 		service = Service.get_by_id(int(service_id))
-		dataflow = Dataflow.query(Dataflow.reference == dataflow_id).fetch()[0]
-		serviceKeyTypes = []
-		for serviceType in dataflow.serviceTypes:
-			serviceKeyTypes.append(serviceType.get().name)
-
 
 		items = Item.query(ndb.OR(Item.dataflow == dataflow_id, Item.dataflow == 'All'),
 						   ndb.OR(Item.account == account_id, Item.account == 'All'))
@@ -662,7 +650,7 @@ class service(BaseHandler):
 		for item in items:
 			itemD = dict()
 			itemD['value'] = item.key.id()
-			itemD['text'] = item.kind + ' - ' + item.value + ' - ' + item.desc' - ' + item.site
+			itemD['text'] = item.kind + ' - ' + item.value + ' - ' + item.desc + ' - ' + item.site
 			itemsList.append(itemD)
 
    		template_values = {
@@ -672,7 +660,7 @@ class service(BaseHandler):
 			'dataflow_id': dataflow_id,
 			'propertyKind': propertyKind,
 			'itemsList': itemsList,
-			'inputKeysNames': dataflow.inputKeys,
+
 		}
 		return self.render_response('service.html', **template_values)
 
@@ -922,7 +910,6 @@ class fullproduct(BaseHandler):
 
    		template_values = {
 			'consumables': matrix['consumables'],
-			'instrumentations': matrix['instrumentations'],
 			'account_id': account_id,
 			'dataflow_id': dataflow_id,
 		}
@@ -943,12 +930,6 @@ class items(BaseHandler):
 		dataflowList.append('All')
 		dataflowList.append(dataflow_id)
 
-		itemTypes = ItemType.query().fetch()
-		itemTypesList = []
-		for itemType in itemTypes:
-			itemTypesList.append(itemType.name)
-
-
    		template_values = {
 			'account_id': account_id,
 			'dataflow_id': dataflow_id,
@@ -957,7 +938,6 @@ class items(BaseHandler):
 			'site_list': site_list,
 			'accountList': accountList,
 			'dataflowList': dataflowList,
-			'itemTypesList': itemTypesList,
 		}
 		return self.render_response('items.html', **template_values)
 	def post(self, account_id, dataflow_id):
@@ -967,6 +947,8 @@ class items(BaseHandler):
 						kind = self.request.get("kind"),
 						account = self.request.get("account"),
 						dataflow = self.request.get("dataflow"),
+						parameter1 = self.request.get("parameter1"),
+						parameter2 = self.request.get("parameter2"),
 						desc = self.request.get("desc"),
 						site = self.request.get("site"))
 
