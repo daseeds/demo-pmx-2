@@ -66,8 +66,6 @@ class Item(ndb.Model):
 	expiration = ndb.DateTimeProperty()
 	goLive = ndb.DateTimeProperty()
 	desc = ndb.StringProperty(default="")
-	reservation = ndb.BooleanProperty(default=False)
-	consomation = ndb.BooleanProperty(default=False)
 
 class ItemType(ndb.Model):
 	name = ndb.StringProperty(default="")
